@@ -1,0 +1,75 @@
+
+:root {
+  --bg: #0b1018;
+  --panel: #111827;
+  --panel2: #0e1523;
+  --line: #1f2b3a;
+  --text: #e7eefb;
+  --muted: #9eb0c8;
+  --accent: #1a73e8;
+  --accent2: #00c2ff;
+  --ok: #28a745;
+  --warn: #ffb020;
+  --bad: #e55353;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: radial-gradient(1200px 500px at 20% -20%, #142034 0%, transparent 60%), 
+              radial-gradient(1000px 600px at 120% 0%, #0d2038 0%, transparent 60%), 
+              linear-gradient(160deg, var(--bg), #09111c 50%, #0b0f17 100%);
+  color: var(--text);
+}
+.header {
+  padding: 14px 18px;
+  position: sticky; top: 0;
+  background: rgba(9, 17, 28, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px;
+}
+.header img { height: 32px; width: auto; border-radius: 6px; }
+.header h1 { margin: 0; font-size: 18px; letter-spacing: 0.3px; }
+.header .actions { margin-left: auto; display: flex; gap: 10px; }
+button.primary {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  color: white; border: 0; padding: 9px 12px; border-radius: 10px;
+  font-weight: 600; cursor: pointer;
+}
+button.secondary {
+  background: #1a2130; color: var(--text); border: 1px solid var(--line);
+  padding: 9px 12px; border-radius: 10px; cursor: pointer;
+}
+.container {
+  max-width: 1180px;
+  margin: 18px auto 60px;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: linear-gradient(180deg, var(--panel), var(--panel2));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+}
+.card h2 { margin: 4px 0 8px; font-size: 18px; }
+.card p { color: var(--muted); margin: 0 0 10px; font-size: 14px; }
+label { font-size: 12px; color: var(--muted); }
+.card input, .card select, .card textarea {
+  width: 100%; background: #0f1522; color: var(--text);
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin: 6px 0 10px;
+}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.small { font-size: 12px; color: var(--muted); }
+hr.div { border: 0; border-top: 1px dashed var(--line); margin: 10px 0; }
+ul.clean { margin: 8px 0 0; padding-left: 16px; }
+.footer { text-align: center; color: var(--muted); font-size: 12px; padding: 30px 0 60px; }
+a { color: #8ecbff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.badge { padding: 2px 8px; border-radius: 10px; background: #1a2130; border: 1px solid var(--line); }

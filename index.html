@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blown Film Shop Tools</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="theme-color" content="#1a73e8" />
+</head>
+<body>
+  <header class="header">
+    <img id="logo" src="logo.png" alt="Logo" />
+    <h1>Blown Film Shop Tools</h1>
+    <div class="actions">
+      <button id="installBtn" class="primary" onclick="installApp()" style="display:none">Install to Home or Desktop</button>
+      <button class="secondary" onclick="location.reload()">Refresh</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>BUR and Layflat</h2>
+      <p>Calculate blow up ratio or expected layflat</p>
+      <div class="grid2">
+        <div>
+          <label>Layflat inches</label>
+          <input id="burLayflat" type="number" step="0.01" placeholder="e.g. 40" />
+        </div>
+        <div>
+          <label>Die diameter inches</label>
+          <input id="burDie" type="number" step="0.01" placeholder="e.g. 6" />
+        </div>
+      </div>
+      <button class="primary" onclick="calcBUR()">Get BUR</button>
+      <p id="burOut" class="small"></p>
+      <hr class="div" />
+      <div class="grid2">
+        <div>
+          <label>Target BUR</label>
+          <input id="burValue" type="number" step="0.01" placeholder="e.g. 2.2" />
+        </div>
+        <div>
+          <label>Die diameter inches</label>
+          <input id="burDie2" type="number" step="0.01" placeholder="e.g. 6" />
+        </div>
+      </div>
+      <button class="secondary" onclick="calcLayflatFromBUR()">Layflat from BUR</button>
+      <p id="burOut2" class="small"></p>
+    </section>
+
+    <section class="card">
+      <h2>Throughput Mono</h2>
+      <p>Estimate lb per hour or required speed</p>
+      <div class="grid3">
+        <div>
+          <label>Layflat width in</label>
+          <input id="monoWidth" type="number" step="0.01" placeholder="e.g. 40" />
+        </div>
+        <div>
+          <label>Thickness mil</label>
+          <input id="monoMil" type="number" step="0.01" placeholder="e.g. 2.0" />
+        </div>
+        <div>
+          <label>Line speed fpm</label>
+          <input id="monoFPM" type="number" step="0.1" placeholder="e.g. 120" />
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>Density g per cc</label>
+          <input id="monoDensity" type="number" step="0.001" value="0.920" />
+        </div>
+        <div>
+          <label>Target lb per hr</label>
+          <input id="monoTargetLbHr" type="number" step="0.1" placeholder="optional" />
+        </div>
+      </div>
+      <button class="primary" onclick="calcLbHrMono()">Calc lb per hr</button>
+      <button class="secondary" onclick="calcFPMFromLbHr()">Speed from lb per hr</button>
+      <p id="monoOut" class="small"></p>
+      <p id="monoOut2" class="small"></p>
+      <p class="small"><span class="badge">Note</span> Uses constant 0.0260115 for lb per hr with width in inches, mil, fpm, and density in g per cc</p>
+    </section>
+
+    <section class="card">
+      <h2>Throughput Coex</h2>
+      <p>Split lb per hour across layers</p>
+      <div class="grid3">
+        <div>
+          <label>Layflat width in</label>
+          <input id="coexWidth" type="number" step="0.01" placeholder="e.g. 40" />
+        </div>
+        <div>
+          <label>Total thickness mil</label>
+          <input id="coexMil" type="number" step="0.01" placeholder="e.g. 2.0" />
+        </div>
+        <div>
+          <label>Line speed fpm</label>
+          <input id="coexFPM" type="number" step="0.1" placeholder="e.g. 120" />
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <label>Layers</label>
+          <select id="coexLayers" onchange="updateLayerRows()">
+            <option>2</option><option selected>3</option><option>4</option><option>5</option>
+          </select>
+        </div>
+        <div><label>&nbsp;</label><button class="secondary" onclick="calcCoex()">Calc coex</button></div>
+      </div>
+      <table style="width:100%; border-collapse:collapse; border:1px solid var(--line)">
+        <thead>
+          <tr style="background:#0f1522"><th style="padding:6px">Layer</th><th>Thickness pct</th><th>Density g per cc</th><th>Lb per hr</th></tr>
+        </thead>
+        <tbody id="coexTbody"></tbody>
+      </table>
+      <p id="coexTotal" class="small"></p>
+    </section>
+
+    <section class="card">
+      <h2>Unit Converter</h2>
+      <p>Quick common conversions</p>
+      <div class="grid2">
+        <select id="convKind">
+          <option value="mm_in">mm to in</option>
+          <option value="in_mm">in to mm</option>
+          <option value="m_ft">m to ft</option>
+          <option value="ft_m">ft to m</option>
+          <option value="mic_mil">micron to mil</option>
+          <option value="mil_mic">mil to micron</option>
+          <option value="c_f">C to F</option>
+          <option value="f_c">F to C</option>
+          <option value="kg_lb">kg to lb</option>
+          <option value="lb_kg">lb to kg</option>
+          <option value="g_oz">g to oz</option>
+          <option value="oz_g">oz to g</option>
+        </select>
+        <input id="convIn" type="number" step="0.0001" placeholder="Value" />
+      </div>
+      <button class="primary" onclick="convertUnits()">Convert</button>
+      <p id="convOut" class="small"></p>
+    </section>
+
+    <section class="card">
+      <h2>Roll OD</h2>
+      <p>Estimate outside diameter from length and thickness</p>
+      <div class="grid3">
+        <div>
+          <label>Roll length ft</label>
+          <input id="rollLength" type="number" step="0.1" placeholder="e.g. 5000" />
+        </div>
+        <div>
+          <label>Thickness mil</label>
+          <input id="rollMil" type="number" step="0.01" placeholder="e.g. 2.0" />
+        </div>
+        <div>
+          <label>Core OD in</label>
+          <input id="rollCoreOD" type="number" step="0.01" value="3.0" />
+        </div>
+      </div>
+      <button class="primary" onclick="calcRollOD()">Calc OD</button>
+      <p id="rollOut" class="small"></p>
+      <p class="small"><span class="badge">Note</span> Ideal estimate assumes tight winding with minimal air</p>
+    </section>
+
+    <section class="card">
+      <h2>Gram Weight</h2>
+      <p>Compute grams per piece for a sheet or tube</p>
+      <div class="grid3">
+        <div>
+          <label>Width in</label>
+          <input id="gwWidth" type="number" step="0.01" placeholder="e.g. 20" />
+        </div>
+        <div>
+          <label>Length in</label>
+          <input id="gwLength" type="number" step="0.01" placeholder="e.g. 30" />
+        </div>
+        <div>
+          <label>Panels</label>
+          <select id="gwPanels"><option value="1">1 panel</option><option value="2">2 panels tube</option></select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div><label>Thickness mil</label><input id="gwMil" type="number" step="0.01" placeholder="e.g. 2.0" /></div>
+        <div><label>Density g per cc</label><input id="gwDensity" type="number" step="0.001" value="0.920" /></div>
+      </div>
+      <button class="primary" onclick="calcGramWeight()">Calc grams</button>
+      <p id="gwOut" class="small"></p>
+    </section>
+
+    <section class="card">
+      <h2>Resin Blend</h2>
+      <p>Break out weights by percent</p>
+      <div class="grid2">
+        <div><label>Total lb</label><input id="blendTotal" type="number" step="0.1" placeholder="e.g. 500" /></div>
+        <div><label>&nbsp;</label><button class="secondary" onclick="calcBlend()">Calc blend</button></div>
+      </div>
+      <table style="width:100%; border-collapse:collapse; border:1px solid var(--line)">
+        <thead><tr style="background:#0f1522"><th style="padding:6px">Resin</th><th>Percent</th></tr></thead>
+        <tbody id="blendTbody">
+          <tr><td><input class="blendName" value="A"></td><td><input class="blendPct" type="number" value="50"></td></tr>
+          <tr><td><input class="blendName" value="B"></td><td><input class="blendPct" type="number" value="50"></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px"><button class="secondary" onclick="addBlendRow()">Add resin</button></div>
+      <p id="blendOut" class="small"></p>
+    </section>
+
+    <section class="card">
+      <h2>Quick Reference</h2>
+      <p>Useful constants and typical values</p>
+      <ul class="clean small">
+        <li>1 mil = 0.001 in  = 25.4 micron</li>
+        <li>1 ft = 0.3048 m  = 12 in</li>
+        <li>Density typical: LDPE 0.915 to 0.930 g per cc  LLDPE 0.915 to 0.940  HDPE 0.941 to 0.965</li>
+        <li>Lb per hr constant: width in × mil × fpm × density g per cc × 0.0260115</li>
+        <li>Layflat ≈ π × die dia × BUR ÷ 2</li>
+        <li>Bubble dia ≈ 2 × layflat ÷ π</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>About and Branding</h2>
+      <p>Replace logo.png with your logo file or paste a hosted image URL below</p>
+      <div class="grid2">
+        <input id="logoUrl" placeholder="https://.../your-logo.png" />
+        <button class="secondary" onclick="saveLogoUrl()">Use URL</button>
+      </div>
+      <p class="small">This tool installs to home screens and works offline after first load</p>
+    </section>
+  </main>
+
+  <footer class="footer">Built for the extrusion crew</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
