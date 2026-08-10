@@ -1,302 +1,1203 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Blown Film Shop Tools</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
-  <meta name="theme-color" content="#1a73e8" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extrusion &amp; Press Calculators — Inteplast Engineered Films</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#145CA8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IEF Tools">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<style>
+  :root{
+    --ip-blue:#145CA8; --ip-blue-dark:#0D3D73; --ip-blue-mid:#1E6FBF;
+    --ip-tint:#E8F0FA; --ip-tint-2:#F4F8FC;
+    --line:#B9C7D6; --line-soft:#DCE5EE;
+    --ink:#1B2733; --muted:#61748A;
+    --red:#C0272D; --red-bg:#FBE9E9; --red-line:#E7AEAE;
+    --amber:#9A6B00; --amber-bg:#FDF4DE; --amber-line:#E3C97F;
+    --green:#186B3E; --green-bg:#E4F3EA; --green-line:#9BCBAE;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:#EDF1F6;color:var(--ink);
+    font-family:"Segoe UI",Calibri,Arial,Helvetica,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+
+  .toolbar{position:sticky;top:0;z-index:60;background:var(--ip-blue);color:#fff;
+    border-bottom:3px solid var(--ip-blue-dark);box-shadow:0 2px 8px rgba(13,61,115,.25)}
+  .toolbar-inner{max-width:1400px;margin:0 auto;padding:9px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .tb-logo{height:34px;width:auto;background:#fff;padding:3px 7px;border-radius:4px;display:block}
+  .tb-brand{font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.15}
+  .tb-brand .sub{display:block;font-size:10.5px;font-weight:600;letter-spacing:.04em;opacity:.82;text-transform:none}
+  .spacer{flex:1}
+  .kswitch{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600}
+  .kswitch select{font:inherit;font-size:12.5px;padding:5px 8px;border-radius:5px;
+    border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);color:#fff;outline:none}
+  .kswitch select option{color:#111;background:#fff}
+  .btn{font:inherit;font-size:13px;font-weight:600;padding:7px 12px;border-radius:5px;cursor:pointer;
+    border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.14);color:#fff;white-space:nowrap}
+  .btn:hover{background:rgba(255,255,255,.28)}
+
+  .tabbar{background:var(--ip-blue-dark)}
+  .tabbar-inner{max-width:1400px;margin:0 auto;padding:0 16px;display:flex;gap:2px;flex-wrap:wrap}
+  .tab{font:inherit;font-size:13.5px;font-weight:600;color:#B9D2EC;background:transparent;border:0;
+    border-bottom:3px solid transparent;padding:11px 20px;cursor:pointer}
+  .tab:hover{color:#fff;background:rgba(255,255,255,.07)}
+  .tab.on{color:#fff;border-bottom-color:#fff;background:rgba(255,255,255,.12)}
+
+  .wrap{max-width:1400px;margin:18px auto 70px;padding:0 16px}
+  .panel{display:none}
+  .panel.on{display:block}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px;align-items:start}
+  @media (max-width:900px){ .cards{grid-template-columns:1fr} }
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:7px;overflow:hidden;
+    box-shadow:0 1px 3px rgba(27,39,51,.10),0 8px 24px rgba(27,39,51,.06)}
+  .card.wide{grid-column:1 / -1}
+  .card-head{background:var(--ip-tint);border-bottom:1px solid var(--line);padding:11px 16px;
+    font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ip-blue-dark);
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .card-head .note{margin-left:auto;font-size:10.5px;font-weight:600;letter-spacing:.03em;
+    text-transform:none;color:var(--muted)}
+  .card-body{padding:16px}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+  .fld label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--ip-blue-dark);margin-bottom:5px}
+  .fld input,.fld select{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);
+    border-radius:4px;background:#fff;color:var(--ink);outline:none}
+  .fld input:focus,.fld select:focus{border-color:var(--ip-blue);box-shadow:0 0 0 2px rgba(20,92,168,.14)}
+  .fld input[readonly]{background:var(--ip-tint-2);color:var(--muted)}
+  .fld .u{font-size:10.5px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
+  .fld .hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+  .out{background:var(--ip-tint-2);border:1px solid var(--line-soft);border-radius:6px;padding:12px 14px;margin-top:14px}
+  .out-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px}
+  .o{background:#fff;border:1px solid var(--line-soft);border-radius:5px;padding:9px 11px}
+  .o .k{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:3px}
+  .o .v{font-size:20px;font-weight:700;color:var(--ip-blue-dark);line-height:1.2;word-break:break-word}
+  .o .v small{font-size:11.5px;font-weight:600;color:var(--muted);margin-left:3px}
+  .o.hero{background:var(--green-bg);border-color:var(--green-line)}
+  .o.hero .v{color:var(--green)}
+  .o.warn{background:var(--red-bg);border-color:var(--red-line)}
+  .o.warn .v{color:var(--red);font-size:14px}
+
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:#fff}
+  .seg button{font:inherit;font-size:12.5px;font-weight:600;padding:7px 14px;border:0;background:#fff;
+    color:var(--muted);cursor:pointer;border-right:1px solid var(--line-soft)}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--ip-blue);color:#fff}
+
+  .banner{margin:0 0 14px;padding:10px 12px;border-radius:5px;font-size:12.5px;line-height:1.55;
+    background:var(--ip-tint);border:1px solid #A9C6E5;color:var(--ip-blue-dark)}
+  .banner.warn{background:var(--amber-bg);border-color:var(--amber-line);color:#7A5B00}
+
+  table.t{width:100%;border-collapse:collapse;font-size:13px}
+  table.t th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ip-blue-dark);
+    font-weight:700;padding:7px 8px;border-bottom:2px solid var(--line);background:var(--ip-tint-2)}
+  table.t td{padding:5px 8px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+  table.t input,table.t select{width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);
+    border-radius:4px;outline:none;background:#fff}
+  table.t input:focus{border-color:var(--ip-blue)}
+  table.t td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  .rm{border:1px solid var(--red-line);background:#fff;color:var(--red);border-radius:4px;
+    font-size:11.5px;font-weight:700;padding:5px 9px;cursor:pointer}
+  .rm:hover{background:var(--red-bg)}
+  .btn-out{font:inherit;font-size:13px;font-weight:600;padding:7px 13px;border-radius:5px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ip-blue-dark)}
+  .btn-out:hover{background:var(--ip-tint)}
+  .btn-blue{font:inherit;font-size:13px;font-weight:700;padding:8px 15px;border-radius:5px;cursor:pointer;
+    border:1px solid var(--ip-blue);background:var(--ip-blue);color:#fff}
+  .btn-blue:hover{background:var(--ip-blue-mid)}
+  .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+
+  .pct{font-weight:700}
+  .pct.ok{color:var(--green)}
+  .pct.bad{color:var(--red)}
+
+  .conv{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end;margin-bottom:10px}
+  .conv .eq{font-size:17px;color:var(--muted);padding-bottom:9px;font-weight:700}
+  @media (max-width:620px){ .conv{grid-template-columns:1fr} .conv .eq{display:none} }
+
+  .fx{font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:12.5px;
+    background:var(--ip-tint-2);border:1px solid var(--line-soft);border-radius:5px;padding:9px 11px;
+    margin:6px 0 12px;overflow-x:auto;white-space:pre}
+  .fx b{color:var(--ip-blue-dark)}
+  h3.sec{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--ip-blue-dark);
+    margin:20px 0 6px;padding-bottom:5px;border-bottom:2px solid var(--ip-tint)}
+  h3.sec:first-child{margin-top:0}
+  .fx-note{font-size:12.5px;line-height:1.6;color:var(--ink);margin:0 0 10px}
+
+  /* ═════════ phone ═════════ */
+  @media (max-width:640px){
+    .toolbar-inner{padding:8px 12px;gap:7px}
+    .tb-brand{font-size:12.5px}
+    .tb-brand .sub{display:none}
+    .kswitch span{display:none}
+    .wrap{margin:12px auto 40px;padding:0 10px}
+    .card-body{padding:12px}
+    .row{grid-template-columns:1fr 1fr;gap:10px}
+    .tab{padding:10px 13px;font-size:12.5px}
+    /* fingers, not mice */
+    .fld input,.fld select{font-size:16px;padding:10px}   /* 16px stops iOS zooming on focus */
+    .seg button{padding:10px 14px}
+    .o .v{font-size:18px}
+  }
+  @media (max-width:380px){ .row{grid-template-columns:1fr} }
+
+  /* ═════════ dark mode ═════════ */
+  :root[data-theme="dark"]{
+    --ip-tint:#16324F; --ip-tint-2:#122A42;
+    --line:#2C4964; --line-soft:#223B54;
+    --ink:#E6EDF5; --muted:#93A6BA;
+    --red-bg:#3A1E20; --red-line:#7A3B3F; --red:#FF8A8F;
+    --amber-bg:#3A3220; --amber-line:#7A6535; --amber:#F0C46A;
+    --green-bg:#16331F; --green-line:#3E6B4C; --green:#79D69B;
+    --ip-blue-dark:#8FBEEA;
+  }
+  :root[data-theme="dark"] body{background:#0B1622}
+  :root[data-theme="dark"] .card{background:#132539}
+  :root[data-theme="dark"] .fld input,
+  :root[data-theme="dark"] .fld select,
+  :root[data-theme="dark"] table.t input,
+  :root[data-theme="dark"] table.t select,
+  :root[data-theme="dark"] .seg,
+  :root[data-theme="dark"] .seg button,
+  :root[data-theme="dark"] .o,
+  :root[data-theme="dark"] .fx,
+  :root[data-theme="dark"] .btn-out,
+  :root[data-theme="dark"] .rm{background:#0E1E2F;color:var(--ink);border-color:var(--line)}
+  :root[data-theme="dark"] .fld input[readonly]{background:#16283C;color:var(--muted)}
+  :root[data-theme="dark"] .seg button.on{background:var(--ip-blue);color:#fff}
+  :root[data-theme="dark"] .o .v{color:#9FC6EE}
+  :root[data-theme="dark"] .o.hero .v{color:var(--green)}
+  :root[data-theme="dark"] .o.warn .v{color:var(--red)}
+  :root[data-theme="dark"] .btn-out{color:#9FC6EE}
+  :root[data-theme="dark"] .rm{color:var(--red)}
+  :root[data-theme="dark"] .fld select option{background:#0E1E2F;color:var(--ink)}
+  :root[data-theme="dark"] .tb-logo{background:#fff}
+  :root[data-theme="dark"] h3.sec{border-bottom-color:var(--line)}
+
+  @media print{
+    /* paper is always light, whatever the screen is set to */
+    :root[data-theme="dark"]{
+      --ip-tint:#E8F0FA; --ip-tint-2:#F4F8FC; --line:#B9C7D6; --line-soft:#DCE5EE;
+      --ink:#1B2733; --muted:#61748A; --ip-blue-dark:#0D3D73;
+      --red-bg:#FBE9E9; --amber-bg:#FDF4DE; --green-bg:#E4F3EA;
+      --red:#C0272D; --amber:#9A6B00; --green:#186B3E;
+    }
+    :root[data-theme="dark"] body,
+    :root[data-theme="dark"] .card,
+    :root[data-theme="dark"] .o,
+    :root[data-theme="dark"] .fld input,
+    :root[data-theme="dark"] .fld select{background:#fff !important;color:#1B2733 !important}
+    :root[data-theme="dark"] .o .v{color:#0D3D73 !important}
+  }
+
+  @media print{
+    .toolbar,.tabbar,.acts,.no-print{display:none !important}
+    body{background:#fff}
+    .card{border:1px solid #999;box-shadow:none;page-break-inside:avoid}
+    .panel{display:none !important}
+    .panel.on{display:block !important}
+    @page{size:letter portrait;margin:.5in}
+  }
+</style>
 </head>
 <body>
-  <header class="header">
-    <img id="logo" src="logo.png" alt="Logo" />
-    <h1>Blown Film Shop Tools</h1>
-    <input id="filterInput" class="filter-input" type="search"
-           placeholder="Filter tools…" autocomplete="off" aria-label="Filter tools" />
-    <div class="actions">
-      <button id="installBtn" class="primary" style="display:none">Install App</button>
-      <button id="refreshBtn" class="secondary">Refresh</button>
+
+<div class="toolbar no-print">
+  <div class="toolbar-inner">
+    <img class="tb-logo" id="logo" alt="Inteplast Group — Engineered Films">
+    <div class="tb-brand">Process Calculators<span class="sub">Engineered Films — Orlando</span></div>
+    <div class="spacer"></div>
+    <div class="kswitch">
+      <span>Constants</span>
+      <select id="kMode" title="Which constants the roll maths uses">
+        <option value="sheet">Match spreadsheets (65.4 / 0.00067)</option>
+        <option value="exact">Exact (65.4498 / 0.000672)</option>
+      </select>
     </div>
-  </header>
+    <button class="btn" id="btnInstall" style="display:none" title="Add this to your home screen">⤓ Install</button>
+    <button class="btn" id="btnTheme" title="Switch between light and dark">🌙 Dark</button>
+    <button class="btn" id="btnPrint">Print</button>
+  </div>
+</div>
 
-  <main class="container">
+<div class="tabbar no-print">
+  <div class="tabbar-inner">
+    <button class="tab on" data-tab="ext">Extrusion</button>
+    <button class="tab" data-tab="press">Press</button>
+    <button class="tab" data-tab="conv">Unit Converter</button>
+    <button class="tab" data-tab="fx">Formulas</button>
+  </div>
+</div>
 
-    <!-- BUR and Layflat -->
-    <section class="card" data-tool="bur blow up ratio layflat bubble diameter">
-      <h2>BUR and Layflat</h2>
-      <p>Calculate blow up ratio or expected layflat</p>
-      <div class="grid2">
-        <div>
-          <label for="burLayflat">Layflat inches</label>
-          <input id="burLayflat" type="number" step="0.01" min="0"
-                 placeholder="e.g. 40" autocomplete="off" aria-label="Layflat in inches" />
+<div class="wrap">
+
+<!-- ═══════════════ EXTRUSION ═══════════════ -->
+<div class="panel on" id="p-ext">
+  <div class="cards">
+
+    <!-- ROLL -->
+    <div class="card wide">
+      <div class="card-head">Roll Calculator — OD, Footage &amp; Weight
+        <span class="note">from “Roll OD calculator- impressions MAIN.xlsx”</span></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="fld"><label>Film type</label>
+            <select id="e_type"></select><div class="hint">Sets the layer count.</div></div>
+          <div class="fld"><label>Layers <span class="u">set by film type</span></label>
+            <input type="number" id="e_layers" value="2" readonly tabindex="-1"></div>
+          <div class="fld"><label>Width <span class="u">in</span></label><input type="number" id="e_w" step="0.01" value="26"></div>
+          <div class="fld"><label>Side gusset <span class="u">in</span></label><input type="number" id="e_g" step="0.01" value="0"></div>
+          <div class="fld"><label>Lip <span class="u">in</span></label><input type="number" id="e_lip" step="0.01" value="0"></div>
+          <div class="fld"><label>Gauge <span class="u">mil</span></label><input type="number" id="e_gauge" step="0.01" value="3.6"></div>
+          <div class="fld"><label>Colored</label>
+            <select id="e_col"><option value="n">No — 0.922</option><option value="y">Yes — 0.946</option></select></div>
+          <div class="fld"><label>Core</label>
+            <select id="e_coreSel">
+              <option value="4" selected>3&quot; core — 4&quot; OD</option>
+              <option value="7">6&quot; core — 7&quot; OD</option>
+              <option value="custom">Custom…</option>
+            </select>
+            <div class="hint">Named by ID; the maths uses the OD.</div></div>
+          <div class="fld" id="e_coreWrap" style="display:none"><label>Core OD <span class="u">in</span></label>
+            <input type="number" id="e_core" step="0.25" value="4"></div>
         </div>
-        <div>
-          <label for="burDie">Die diameter inches</label>
-          <input id="burDie" type="number" step="0.01" min="0"
-                 placeholder="e.g. 6" autocomplete="off" aria-label="Die diameter in inches" />
+
+        <div class="acts" style="margin:0 0 12px">
+          <span class="fld" style="margin:0"><label style="margin:0 8px 0 0;display:inline">Solve for</label></span>
+          <div class="seg" id="e_solve">
+            <button data-s="od" class="on">Roll OD</button>
+            <button data-s="ft">Footage</button>
+            <button data-s="lb">Weight</button>
+          </div>
+          <div class="fld" style="min-width:190px;margin:0">
+            <input type="number" id="e_known" step="0.01" value="18">
+          </div>
+          <span class="hint" id="e_knownLbl" style="color:var(--muted);font-size:12px"></span>
+        </div>
+
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k" id="e_o1k">Roll OD</div><div class="v" id="e_o1">—</div></div>
+            <div class="o"><div class="k">Footage</div><div class="v" id="e_ft">—<small>ft</small></div></div>
+            <div class="o"><div class="k">Weight</div><div class="v" id="e_lb">—<small>lb</small></div></div>
+            <div class="o"><div class="k">Gram / metre</div><div class="v" id="e_gpm">—<small>g/m</small></div></div>
+            <div class="o"><div class="k">Yield</div><div class="v" id="e_yield">—<small>ft²/lb</small></div></div>
+            <div class="o"><div class="k">Lb per 1000 ft</div><div class="v" id="e_lbk">—</div></div>
+          </div>
         </div>
       </div>
-      <button id="btnBUR" class="primary">Get BUR</button>
-      <div id="burOut" class="result" title="Click to copy"></div>
-      <hr class="div" />
-      <div class="grid2">
-        <div>
-          <label for="burValue">Target BUR</label>
-          <input id="burValue" type="number" step="0.01" min="0"
-                 placeholder="e.g. 2.2" autocomplete="off" aria-label="Target BUR" />
-        </div>
-        <div>
-          <label for="burDie2">Die diameter inches</label>
-          <input id="burDie2" type="number" step="0.01" min="0"
-                 placeholder="e.g. 6" autocomplete="off" aria-label="Die diameter in inches" />
-        </div>
-      </div>
-      <button id="btnLayflatFromBUR" class="secondary">Layflat from BUR</button>
-      <div id="burOut2" class="result" title="Click to copy"></div>
-    </section>
+    </div>
 
-    <!-- Throughput Mono -->
-    <section class="card" data-tool="throughput mono single layer lb per hour speed fpm">
-      <h2>Throughput Mono</h2>
-      <p>Estimate lb per hour or required line speed</p>
-      <div class="grid3">
-        <div>
-          <label for="monoWidth">Layflat width in</label>
-          <input id="monoWidth" type="number" step="0.01" min="0"
-                 placeholder="e.g. 40" autocomplete="off" aria-label="Layflat width in inches" />
+    <!-- GRAM WEIGHT -->
+    <div class="card">
+      <div class="card-head">Gram Weight</div>
+      <div class="card-body">
+        <div class="banner">
+          Gram/m = ((Width + Gusset) × Layers + Lip) × 2.54 × Gauge × 0.00254 × Density × 100
         </div>
-        <div>
-          <label for="monoMil">Thickness mil</label>
-          <input id="monoMil" type="number" step="0.01" min="0"
-                 placeholder="e.g. 2.0" autocomplete="off" aria-label="Thickness in mil" />
+        <div class="row">
+          <div class="fld"><label>Width <span class="u">in</span></label><input type="number" id="g_w" step="0.01" value="26"></div>
+          <div class="fld"><label>Side gusset <span class="u">in</span></label><input type="number" id="g_g" step="0.01" value="0"></div>
+          <div class="fld"><label>Lip <span class="u">in</span></label><input type="number" id="g_lip" step="0.01" value="0"></div>
+          <div class="fld"><label>Gauge <span class="u">mil</span></label><input type="number" id="g_gauge" step="0.01" value="3.6"></div>
+          <div class="fld"><label>Layers</label><input type="number" id="g_layers" step="1" min="1" value="2"></div>
+          <div class="fld"><label>Density <span class="u">g/cc</span></label><input type="number" id="g_den" step="0.001" value="0.922"></div>
         </div>
-        <div>
-          <label for="monoFPM">Line speed fpm</label>
-          <input id="monoFPM" type="number" step="0.1" min="0"
-                 placeholder="e.g. 120" autocomplete="off" aria-label="Line speed in feet per minute" />
-        </div>
-      </div>
-      <div class="grid2">
-        <div>
-          <label for="monoDensity">Density g/cc</label>
-          <input id="monoDensity" type="number" step="0.001" min="0" value="0.920"
-                 autocomplete="off" aria-label="Density in grams per cubic centimeter" />
-        </div>
-        <div>
-          <label for="monoTargetLbHr">Target lb/hr</label>
-          <input id="monoTargetLbHr" type="number" step="0.1" min="0"
-                 placeholder="for speed calc" autocomplete="off" aria-label="Target pounds per hour" />
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k">Gram / metre</div><div class="v" id="g_out">—<small>g/m</small></div></div>
+            <div class="o"><div class="k">Gram / 1000 m</div><div class="v" id="g_km">—<small>kg</small></div></div>
+            <div class="o"><div class="k">Lb / 1000 ft</div><div class="v" id="g_lbk">—</div></div>
+            <div class="o"><div class="k">Flat width used</div><div class="v" id="g_flat">—<small>in</small></div></div>
+          </div>
         </div>
       </div>
-      <div class="btn-group">
-        <button id="btnLbHrMono" class="primary">Calc lb/hr</button>
-        <button id="btnFPMFromLbHr" class="secondary">Speed from lb/hr</button>
-      </div>
-      <div id="monoOut"  class="result" title="Click to copy"></div>
-      <div id="monoOut2" class="result" title="Click to copy"></div>
-      <p class="small"><span class="badge">Note</span> Uses constant 0.0260115 — width (in) × mil × fpm × density (g/cc)</p>
-    </section>
+    </div>
 
-    <!-- Throughput Coex -->
-    <section class="card" data-tool="throughput coex coextrusion layers split lb per hour">
-      <h2>Throughput Coex</h2>
-      <p>Split lb per hour across up to 5 layers</p>
-      <div class="grid3">
-        <div>
-          <label for="coexWidth">Layflat width in</label>
-          <input id="coexWidth" type="number" step="0.01" min="0"
-                 placeholder="e.g. 40" autocomplete="off" aria-label="Layflat width in inches" />
+    <!-- BUR -->
+    <div class="card">
+      <div class="card-head">Blow-Up Ratio <span class="note">from “BUR Calculator.xlsx”</span></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="fld"><label>Line / die</label><select id="b_die"></select></div>
+          <div class="fld"><label>Die diameter <span class="u">in</span></label><input type="number" id="b_dia" step="0.01" value="17.72"></div>
         </div>
-        <div>
-          <label for="coexMil">Total thickness mil</label>
-          <input id="coexMil" type="number" step="0.01" min="0"
-                 placeholder="e.g. 2.0" autocomplete="off" aria-label="Total thickness in mil" />
+        <div class="acts" style="margin:0 0 12px">
+          <span class="fld" style="margin:0"><label style="margin:0 8px 0 0;display:inline">Solve for</label></span>
+          <div class="seg" id="b_solve">
+            <button data-s="bur" class="on">BUR</button>
+            <button data-s="lay">Layflat</button>
+          </div>
+          <div class="fld" style="min-width:170px;margin:0"><input type="number" id="b_known" step="0.01" value="42.5"></div>
+          <span class="hint" id="b_lbl" style="color:var(--muted);font-size:12px"></span>
         </div>
-        <div>
-          <label for="coexFPM">Line speed fpm</label>
-          <input id="coexFPM" type="number" step="0.1" min="0"
-                 placeholder="e.g. 120" autocomplete="off" aria-label="Line speed in feet per minute" />
-        </div>
-      </div>
-      <div class="grid2">
-        <div>
-          <label for="coexLayers">Layers</label>
-          <select id="coexLayers" aria-label="Number of layers">
-            <option>2</option><option selected>3</option><option>4</option><option>5</option>
-          </select>
-        </div>
-        <div><label>&nbsp;</label><button id="btnCalcCoex" class="secondary">Calc coex</button></div>
-      </div>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Layer</th>
-            <th>Thickness %</th>
-            <th>Density g/cc</th>
-            <th>Lb/hr</th>
-          </tr>
-        </thead>
-        <tbody id="coexTbody"></tbody>
-      </table>
-      <div id="coexTotal" class="result" title="Click to copy"></div>
-    </section>
-
-    <!-- Unit Converter -->
-    <section class="card" data-tool="unit converter convert mm inches micron mil celsius fahrenheit kg lb oz">
-      <h2>Unit Converter</h2>
-      <p>Quick conversions — updates as you type</p>
-      <div class="grid2">
-        <select id="convKind" aria-label="Conversion type">
-          <option value="mm_in">mm → in</option>
-          <option value="in_mm">in → mm</option>
-          <option value="m_ft">m → ft</option>
-          <option value="ft_m">ft → m</option>
-          <option value="mic_mil">micron → mil</option>
-          <option value="mil_mic">mil → micron</option>
-          <option value="c_f">°C → °F</option>
-          <option value="f_c">°F → °C</option>
-          <option value="kg_lb">kg → lb</option>
-          <option value="lb_kg">lb → kg</option>
-          <option value="g_oz">g → oz</option>
-          <option value="oz_g">oz → g</option>
-        </select>
-        <input id="convIn" type="number" step="0.0001"
-               placeholder="Enter value" autocomplete="off" aria-label="Value to convert" />
-      </div>
-      <div id="convOut" class="result" title="Click to copy"></div>
-    </section>
-
-    <!-- Roll OD -->
-    <section class="card" data-tool="roll od outside diameter length thickness core">
-      <h2>Roll OD</h2>
-      <p>Estimate outside diameter from length and thickness</p>
-      <div class="grid3">
-        <div>
-          <label for="rollLength">Roll length ft</label>
-          <input id="rollLength" type="number" step="0.1" min="0"
-                 placeholder="e.g. 5000" autocomplete="off" aria-label="Roll length in feet" />
-        </div>
-        <div>
-          <label for="rollMil">Thickness mil</label>
-          <input id="rollMil" type="number" step="0.01" min="0"
-                 placeholder="e.g. 2.0" autocomplete="off" aria-label="Thickness in mil" />
-        </div>
-        <div>
-          <label for="rollCoreOD">Core OD in</label>
-          <input id="rollCoreOD" type="number" step="0.01" min="0" value="3.0"
-                 autocomplete="off" aria-label="Core outside diameter in inches" />
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k" id="b_ok">BUR</div><div class="v" id="b_out">—</div></div>
+            <div class="o"><div class="k">Layflat</div><div class="v" id="b_lay">—<small>in</small></div></div>
+            <div class="o"><div class="k">Bubble diameter</div><div class="v" id="b_bub">—<small>in</small></div></div>
+            <div class="o"><div class="k">Die circumference</div><div class="v" id="b_cir">—<small>in</small></div></div>
+          </div>
         </div>
       </div>
-      <button id="btnRollOD" class="primary">Calc OD</button>
-      <div id="rollOut" class="result" title="Click to copy"></div>
-      <p class="small"><span class="badge">Note</span> Ideal estimate — assumes tight winding with minimal air</p>
-    </section>
+    </div>
 
-    <!-- Gram Weight -->
-    <section class="card" data-tool="gram weight grams piece sheet tube bag">
-      <h2>Gram Weight</h2>
-      <p>Compute grams per piece for a sheet or tube</p>
-      <div class="grid3">
-        <div>
-          <label for="gwWidth">Width in</label>
-          <input id="gwWidth" type="number" step="0.01" min="0"
-                 placeholder="e.g. 20" autocomplete="off" aria-label="Width in inches" />
+    <!-- RESIN BLEND -->
+    <div class="card wide">
+      <div class="card-head">3-Layer Coex Resin Blend
+        <span class="note">A = outside · B = core · C = inside</span></div>
+      <div class="card-body">
+        <div class="banner">
+          Layer split must total 100%, and each layer's resins must total 100% of that layer.
+          A typical split is A 30 / B 50 / C 20.
         </div>
-        <div>
-          <label for="gwLength">Length in</label>
-          <input id="gwLength" type="number" step="0.01" min="0"
-                 placeholder="e.g. 30" autocomplete="off" aria-label="Length in inches" />
+        <div class="row">
+          <div class="fld"><label>Total output <span class="u">lb/hr</span></label><input type="number" id="r_total" step="1" value="1000"></div>
+          <div class="fld"><label>A — outside <span class="u">%</span></label><input type="number" id="r_a" step="0.1" value="30"></div>
+          <div class="fld"><label>B — core <span class="u">%</span></label><input type="number" id="r_b" step="0.1" value="50"></div>
+          <div class="fld"><label>C — inside <span class="u">%</span></label><input type="number" id="r_c" step="0.1" value="20"></div>
+          <div class="fld"><label>Layer split total</label><input id="r_sum" readonly></div>
         </div>
-        <div>
-          <label for="gwPanels">Panels</label>
-          <select id="gwPanels" aria-label="Number of panels">
-            <option value="1">1 panel (sheet)</option>
-            <option value="2">2 panels (tube)</option>
-          </select>
+        <div id="r_layers"></div>
+        <div class="acts">
+          <button class="btn-out" id="r_reset">Reset to A30 / B50 / C20</button>
+          <span class="hint" style="color:var(--muted)">Percentages are by weight.</span>
         </div>
       </div>
-      <div class="grid2">
-        <div>
-          <label for="gwMil">Thickness mil</label>
-          <input id="gwMil" type="number" step="0.01" min="0"
-                 placeholder="e.g. 2.0" autocomplete="off" aria-label="Thickness in mil" />
+    </div>
+
+    <!-- THROUGHPUT -->
+    <div class="card wide">
+      <div class="card-head">Throughput — Mono &amp; Coex
+        <span class="note">lb/hr = width × mil × ft/min × density × 0.0260115</span></div>
+      <div class="card-body">
+        <div class="acts" style="margin:0 0 14px">
+          <div class="seg" id="t_mode">
+            <button data-m="mono" class="on">Mono</button>
+            <button data-m="coex">3-Layer Coex</button>
+          </div>
+          <div class="seg" id="t_solve">
+            <button data-s="lbhr" class="on">Solve output</button>
+            <button data-s="fpm">Solve line speed</button>
+          </div>
         </div>
-        <div>
-          <label for="gwDensity">Density g/cc</label>
-          <input id="gwDensity" type="number" step="0.001" min="0" value="0.920"
-                 autocomplete="off" aria-label="Density in grams per cubic centimeter" />
+
+        <div class="row">
+          <div class="fld"><label>Layflat width <span class="u">in</span></label>
+            <input type="number" id="t_w" step="0.01" value="53.5">
+            <div class="hint">Flat width of the web, both plies.</div></div>
+          <div class="fld"><label>Total thickness <span class="u">mil</span></label>
+            <input type="number" id="t_mil" step="0.01" value="3.6"></div>
+          <div class="fld" id="t_fpmWrap"><label>Line speed <span class="u">ft/min</span></label>
+            <input type="number" id="t_fpm" step="1" value="300"></div>
+          <div class="fld" id="t_tgtWrap" style="display:none"><label>Target output <span class="u">lb/hr</span></label>
+            <input type="number" id="t_tgt" step="1" value="1000"></div>
+          <div class="fld" id="t_densWrap"><label>Density <span class="u">g/cc</span></label>
+            <input type="number" id="t_dens" step="0.001" value="0.922"></div>
+        </div>
+
+        <div id="t_coex" style="display:none">
+          <div class="banner">
+            Layer split comes from the Resin Blend card below — change it there and this follows.
+            Each layer can carry its own density.
+          </div>
+          <div class="row">
+            <div class="fld"><label>A density <span class="u">g/cc</span></label>
+              <input type="number" id="t_dA" step="0.001" value="0.922"></div>
+            <div class="fld"><label>B density <span class="u">g/cc</span></label>
+              <input type="number" id="t_dB" step="0.001" value="0.922"></div>
+            <div class="fld"><label>C density <span class="u">g/cc</span></label>
+              <input type="number" id="t_dC" step="0.001" value="0.922"></div>
+          </div>
+          <table class="t" style="margin-bottom:12px">
+            <thead><tr>
+              <th>Layer</th><th style="width:110px">% of gauge</th><th style="width:120px">Thickness</th>
+              <th style="width:110px">Density</th><th style="width:130px">Output</th>
+            </tr></thead>
+            <tbody id="t_rows"></tbody>
+          </table>
+        </div>
+
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k" id="t_mainK">Output</div><div class="v" id="t_main">—</div></div>
+            <div class="o"><div class="k">Line speed</div><div class="v" id="t_ofpm">—<small>ft/min</small></div></div>
+            <div class="o"><div class="k">Per shift (8 hr)</div><div class="v" id="t_shift">—<small>lb</small></div></div>
+            <div class="o"><div class="k">Metres / min</div><div class="v" id="t_mpm">—<small>m/min</small></div></div>
+            <div class="o"><div class="k">Gram / metre</div><div class="v" id="t_gpm">—<small>g/m</small></div></div>
+          </div>
+          <div class="acts">
+            <button class="btn-out" id="t_send">Send output to Resin Blend ↓</button>
+          </div>
         </div>
       </div>
-      <button id="btnGramWeight" class="primary">Calc grams</button>
-      <div id="gwOut" class="result" title="Click to copy"></div>
-    </section>
+    </div>
 
-    <!-- Resin Blend -->
-    <section class="card" data-tool="resin blend mix percent weight lb pounds">
-      <h2>Resin Blend</h2>
-      <p>Break out weights by percent</p>
-      <div class="grid2">
-        <div>
-          <label for="blendTotal">Total lb</label>
-          <input id="blendTotal" type="number" step="0.1" min="0"
-                 placeholder="e.g. 500" autocomplete="off" aria-label="Total pounds" />
+  </div>
+</div>
+
+<!-- ═══════════════ PRESS ═══════════════ -->
+<div class="panel" id="p-press">
+  <div class="cards">
+
+    <div class="card wide">
+      <div class="card-head">Roll Calculator — OD, Footage &amp; Weight
+        <span class="note">same on any press — geometry only</span></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="fld"><label>Film type</label><select id="p_type"></select></div>
+          <div class="fld"><label>Width <span class="u">in</span></label><input type="number" id="p_w" step="0.01" value="26"></div>
+          <div class="fld"><label>Side gusset <span class="u">in</span></label><input type="number" id="p_g" step="0.01" value="0"></div>
+          <div class="fld"><label>Lip <span class="u">in</span></label><input type="number" id="p_lip" step="0.01" value="0"></div>
+          <div class="fld"><label>Gauge <span class="u">mil</span></label><input type="number" id="p_gauge" step="0.01" value="3.6"></div>
+          <div class="fld"><label>Layers <span class="u">set by film type</span></label>
+            <input type="number" id="p_layers" value="2" readonly tabindex="-1"></div>
+          <div class="fld"><label>Colored</label>
+            <select id="p_col"><option value="n">No — 0.922</option><option value="y">Yes — 0.946</option></select></div>
+          <div class="fld"><label>Core</label>
+            <select id="p_coreSel">
+              <option value="4" selected>3&quot; core — 4&quot; OD</option>
+              <option value="7">6&quot; core — 7&quot; OD</option>
+              <option value="custom">Custom…</option>
+            </select>
+            <div class="hint">Named by ID; the maths uses the OD.</div></div>
+          <div class="fld" id="p_coreWrap" style="display:none"><label>Core OD <span class="u">in</span></label>
+            <input type="number" id="p_core" step="0.25" value="4"></div>
         </div>
-        <div><label>&nbsp;</label><button id="btnCalcBlend" class="secondary">Calc blend</button></div>
+        <div class="acts" style="margin:0 0 12px">
+          <span class="fld" style="margin:0"><label style="margin:0 8px 0 0;display:inline">Solve for</label></span>
+          <div class="seg" id="p_solve">
+            <button data-s="od" class="on">Roll OD</button>
+            <button data-s="ft">Footage</button>
+            <button data-s="lb">Weight</button>
+          </div>
+          <div class="fld" style="min-width:190px;margin:0"><input type="number" id="p_known" step="0.01" value="18"></div>
+          <span class="hint" id="p_knownLbl" style="color:var(--muted);font-size:12px"></span>
+        </div>
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k" id="p_o1k">Roll OD</div><div class="v" id="p_o1">—</div></div>
+            <div class="o"><div class="k">Footage</div><div class="v" id="p_ft">—<small>ft</small></div></div>
+            <div class="o"><div class="k">Weight</div><div class="v" id="p_lb">—<small>lb</small></div></div>
+            <div class="o"><div class="k">Gram / metre</div><div class="v" id="p_gpm">—<small>g/m</small></div></div>
+          </div>
+        </div>
       </div>
-      <table class="data-table">
-        <thead><tr><th>Resin</th><th>Percent %</th></tr></thead>
-        <tbody id="blendTbody">
-          <tr>
-            <td><input class="blendName" value="A" aria-label="Resin name"></td>
-            <td><input class="blendPct" type="number" min="0" max="100" value="50" aria-label="Percent"></td>
-          </tr>
-          <tr>
-            <td><input class="blendName" value="B" aria-label="Resin name"></td>
-            <td><input class="blendPct" type="number" min="0" max="100" value="50" aria-label="Percent"></td>
-          </tr>
-        </tbody>
-      </table>
-      <div style="margin-top:8px">
-        <button id="btnAddBlendRow" class="secondary">+ Add resin</button>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Impressions <span class="note">Footage × 12 ÷ repeat</span></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="fld"><label>Footage <span class="u">ft</span></label><input type="number" id="i_ft" step="1" value="2797.67"></div>
+          <div class="fld"><label>Repeat <span class="u">in</span></label><input type="number" id="i_rep" step="0.001" value="39.75"></div>
+          <div class="fld"><label>Across the web <span class="u">up</span></label><input type="number" id="i_up" step="1" min="1" value="1"></div>
+        </div>
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k">Impressions</div><div class="v" id="i_out">—</div></div>
+            <div class="o"><div class="k">× ups</div><div class="v" id="i_tot">—<small>pcs</small></div></div>
+            <div class="o"><div class="k">Ft per 1000 imp</div><div class="v" id="i_per">—<small>ft</small></div></div>
+          </div>
+        </div>
+        <div class="banner" style="margin:14px 0 0">
+          Repeat is the print cylinder repeat in inches. The same calculation applies on the
+          Bielloni Telia 10 and the W&amp;H Novoflex — only the repeat changes.
+        </div>
       </div>
-      <div id="blendOut" class="result" title="Click to copy"></div>
-    </section>
+    </div>
 
-    <!-- Quick Reference -->
-    <section class="card" data-tool="quick reference constants formulas density ldpe lldpe hdpe">
-      <h2>Quick Reference</h2>
-      <p>Useful constants and typical values</p>
-      <ul class="ref-list">
-        <li><span class="ref-key">1 mil</span> = 0.001 in = 25.4 micron</li>
-        <li><span class="ref-key">1 ft</span> = 0.3048 m = 12 in</li>
-        <li><span class="ref-key">LDPE density</span> 0.915 – 0.930 g/cc</li>
-        <li><span class="ref-key">LLDPE density</span> 0.915 – 0.940 g/cc</li>
-        <li><span class="ref-key">HDPE density</span> 0.941 – 0.965 g/cc</li>
-        <li><span class="ref-key">Lb/hr</span> = width (in) × mil × fpm × density × 0.0260115</li>
-        <li><span class="ref-key">Layflat</span> ≈ π × die dia × BUR ÷ 2</li>
-        <li><span class="ref-key">Bubble dia</span> ≈ 2 × layflat ÷ π</li>
-      </ul>
-    </section>
-
-    <!-- About and Branding -->
-    <section class="card" data-tool="about branding logo pwa install offline settings">
-      <h2>About and Branding</h2>
-      <p>Replace logo.png with your logo file, or paste a hosted image URL below</p>
-      <div class="grid2">
-        <input id="logoUrl" placeholder="https://.../your-logo.png" aria-label="Logo URL" />
-        <button id="btnSaveLogo" class="secondary">Use URL</button>
+    <div class="card">
+      <div class="card-head">Job Planner</div>
+      <div class="card-body">
+        <div class="banner">Works back from an order quantity to footage, weight and roll count.</div>
+        <div class="row">
+          <div class="fld"><label>Impressions ordered</label><input type="number" id="j_imp" step="1" value="100000"></div>
+          <div class="fld"><label>Repeat <span class="u">in</span></label><input type="number" id="j_rep" step="0.001" value="39.75"></div>
+          <div class="fld"><label>Waste allowance <span class="u">%</span></label><input type="number" id="j_waste" step="0.1" value="5"></div>
+          <div class="fld"><label>Footage per roll <span class="u">ft</span></label><input type="number" id="j_roll" step="1" value="2800"></div>
+          <div class="fld"><label>Gram / metre <span class="u">g/m</span></label><input type="number" id="j_gpm" step="0.01" value="114.57"></div>
+        </div>
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k">Footage needed</div><div class="v" id="j_ft">—<small>ft</small></div></div>
+            <div class="o"><div class="k">With waste</div><div class="v" id="j_ftw">—<small>ft</small></div></div>
+            <div class="o"><div class="k">Rolls</div><div class="v" id="j_rolls">—</div></div>
+            <div class="o"><div class="k">Total weight</div><div class="v" id="j_lb">—<small>lb</small></div></div>
+          </div>
+        </div>
       </div>
-      <p class="small">Installs to home screens and works offline after first load</p>
-    </section>
+    </div>
 
-  </main>
+  </div>
+</div>
 
-  <footer class="footer">Built for the extrusion crew</footer>
+<!-- ═══════════════ CONVERTER ═══════════════ -->
+<div class="panel" id="p-conv">
+  <div class="cards" id="convCards"></div>
+</div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<!-- ═══════════════ FORMULAS ═══════════════ -->
+<div class="panel" id="p-fx">
+  <div class="card wide">
+    <div class="card-head">Formulas &amp; Constants — what every number here is built from</div>
+    <div class="card-body">
 
-  <script src="app.js"></script>
+      <h3 class="sec">Roll geometry</h3>
+      <p class="fx-note">Wound film fills the annulus between the core and the roll OD. Length × thickness
+        equals that cross-sectional area, which gives both directions:</p>
+      <div class="fx">Footage  = (OD² − Core²) × <b>K</b> ÷ Layers ÷ Gauge
+OD       = √( Footage × Gauge × Layers ÷ <b>K</b> + Core² )</div>
+      <p class="fx-note"><b>K</b> is a pure geometry constant: π × 1000 ÷ 48 = <b>65.4498</b>. Your workbook
+        rounds it to 65.4, which reads about 0.08% low. Both are selectable in the toolbar.</p>
+      <p class="fx-note"><b>Core is the outside diameter, not the inside.</b> Cores are named by ID —
+        a 3″ core is <b>4″ OD</b> and a 6″ core is <b>7″ OD</b> — but film winds on the outside, so the
+        OD is what belongs in the formula. Entering 3 instead of 4 on an 18″ roll overstates the
+        footage by about 60 ft; entering 6 instead of 7 overstates it by roughly 200 ft.</p>
+
+      <h3 class="sec">Gram weight</h3>
+      <div class="fx">Flat width = (Width + Side gusset) × Layers + Lip        [inches]
+Gram/m    = Flat width × 2.54 × Gauge × 0.00254 × Density × 100</div>
+      <p class="fx-note">2.54 converts inches to centimetres, 0.00254 converts mil to centimetres, and the
+        ×100 takes grams per centimetre of length to grams per metre. Density is
+        <b>0.922</b> natural or <b>0.946</b> colored, straight from the workbook.</p>
+
+      <h3 class="sec">Weight and footage</h3>
+      <div class="fx">Weight  = Footage × Gram/m × <b>W</b>
+Footage = Weight ÷ <b>W</b> ÷ Gram/m</div>
+      <p class="fx-note"><b>W</b> converts foot·gram/metre to pounds: 0.3048 ÷ 453.592 = <b>0.000672</b>.
+        The workbook uses 0.00067, about 0.29% low — roughly 2.3 lb on a 780 lb roll.</p>
+
+      <h3 class="sec">Impressions</h3>
+      <div class="fx">Impressions = Footage × 12 ÷ Repeat (in)
+Repeat      = Gear teeth × Pitch          [⅛″ pitch is the usual flexo standard]</div>
+
+      <h3 class="sec">Blow-up ratio</h3>
+      <div class="fx">BUR     = Layflat ÷ (π × Die ÷ 2)
+Layflat = BUR × π × Die ÷ 2
+Bubble diameter = 2 × Layflat ÷ π</div>
+      <p class="fx-note">Die diameters on file: <b>Extruder 10 — 17.72″ (450 mm)</b>,
+        <b>Extruder 13 — 16″ (406.4 mm)</b>.</p>
+
+      <h3 class="sec">Throughput</h3>
+      <div class="fx">lb/hr  = Width × Gauge(mil) × ft/min × Density × <b>0.0260115</b>
+ft/min = lb/hr ÷ (Width × Gauge × Density × <b>0.0260115</b>)
+
+Coex, per layer:
+  Layer gauge = Total gauge × Layer %
+  Layer lb/hr = Width × Layer gauge × ft/min × Layer density × 0.0260115</div>
+      <p class="fx-note">That constant is exact, not fitted:
+        (1 ÷ 1000) × 12 × 16.387064 × 60 ÷ 453.59237 = 0.0260117 — mil to inches, feet to
+        inches, cubic inches to cc, minutes to hours, grams to pounds. It is the same constant
+        used in the plant's existing <b>Inteplast-tools</b> web app.</p>
+
+      <h3 class="sec">Yield</h3>
+      <div class="fx">ft²/lb = Flat width (in) ÷ 12 ÷ (Gram/m × <b>W</b>)</div>
+
+      <h3 class="sec">Checked against your workbooks</h3>
+      <p class="fx-note">Every formula above reproduces the cached results in
+        <b>Roll OD calculator- impressions MAIN.xlsx</b> and <b>BUR Calculator.xlsx</b> to nine decimal
+        places — gram weight 114.5657 g/m, 2797.67 ft at 18″ OD, 214.75 lb, 844.58 impressions at a
+        39.75″ repeat, and BUR 1.5269 for a 42.5″ layflat on the 17.72″ die.</p>
+      <p class="fx-note">One discrepancy worth knowing: the BUR workbook's Line 10 quick chart reads
+        <b>2.52</b> at a 70″ layflat where the formula gives <b>2.5149</b>. Every other charted value agrees.
+        That last row looks hand-extended.</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   Inteplast — Extrusion & Press calculators.
+   Every formula is transcribed from the plant's own workbooks and
+   checked against the physics; see the Formulas tab.
+══════════════════════════════════════════════════════════════════ */
+
+var $  = function(s){ return document.querySelector(s); };
+var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+var num = function(id){ var v = parseFloat($("#"+id).value); return isFinite(v) ? v : 0; };
+
+/* ---- constants ---- */
+/* width(in) x mil x ft/min x g/cc -> lb/hr. Derives exactly:
+   (1/1000) x 12 x 16.387064 x 60 / 453.59237 = 0.0260117 */
+var LB_HR = 0.0260115;
+
+var K_SHEET = 65.4, K_EXACT = Math.PI * 1000 / 48;          /* 65.4498 */
+var W_SHEET = 0.00067, W_EXACT = 0.3048 / 453.59237;        /* 0.000672 */
+var MODE = "sheet";
+function K(){ return MODE === "exact" ? K_EXACT : K_SHEET; }
+function W(){ return MODE === "exact" ? W_EXACT : W_SHEET; }
+
+/* ---- shared maths ---- */
+function flatWidth(w, gus, lip, layers){ return (w + gus) * layers + lip; }
+function gramPerM(w, gus, lip, gauge, layers, den){
+  return flatWidth(w, gus, lip, layers) * 2.54 * gauge * 0.00254 * den * 100;
+}
+function ftFromOD(od, gauge, layers, core){
+  return (od * od - core * core) * K() / layers / gauge;
+}
+function odFromFt(ft, gauge, layers, core){
+  return Math.sqrt(ft * gauge * layers / K() + core * core);
+}
+function lbFromFt(ft, gpm){ return ft * gpm * W(); }
+function ftFromLb(lb, gpm){ return lb / W() / gpm; }
+function impressions(ft, repeat){ return repeat > 0 ? ft * 12 / repeat : 0; }
+function bur(layflat, die){ return die > 0 ? layflat / (Math.PI * die / 2) : 0; }
+function layflatFromBUR(b, die){ return b * Math.PI * die / 2; }
+
+function fmt(n, dp){
+  if(!isFinite(n)) return "—";
+  var s = n.toFixed(dp === undefined ? 2 : dp);
+  return s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function put(id, v, dp, unit){
+  $("#"+id).innerHTML = (isFinite(v) && v !== 0 ? fmt(v, dp) : (v === 0 ? fmt(0, dp) : "—")) +
+    (unit ? '<small>' + unit + '</small>' : "");
+}
+
+/* ---- film types, from the workbook's own table ---- */
+var FILM_TYPES = [
+  { code:"CFD", name:"CFD — centerfold", layers:2 },
+  { code:"JFD", name:"JFD — J-fold",     layers:2 },
+  { code:"TUB", name:"TUB — tubing",     layers:2 },
+  { code:"BOR", name:"BOR",              layers:2 },
+  { code:"SWS", name:"SWS — single wound sheet", layers:1 }
+];
+var DIES = [
+  { name:"Extruder 10 — 17.72 in / 450 mm", dia:17.72 },
+  { name:"Extruder 13 — 16 in / 406.4 mm",  dia:16 },
+  { name:"Custom",                          dia:0 }
+];
+
+/* ══════════ extrusion roll ══════════ */
+var E_SOLVE = "od";
+function calcRoll(pfx, solve, ids){
+  var w = num(ids.w), gus = num(ids.g), lip = num(ids.lip),
+      gauge = num(ids.gauge), layers = num(ids.layers) || 1,
+      core = num(ids.core), den = $("#"+ids.col).value === "y" ? 0.946 : 0.922,
+      known = num(ids.known);
+
+  var gpm = gramPerM(w, gus, lip, gauge, layers, den);
+  var od = 0, ft = 0, lb = 0;
+
+  if(solve === "od"){                     /* OD given, everything else follows */
+    od = known;
+    ft = gauge > 0 ? ftFromOD(od, gauge, layers, core) : 0;
+    lb = lbFromFt(ft, gpm);
+  }else if(solve === "ft"){
+    ft = known;
+    od = gauge > 0 ? odFromFt(ft, gauge, layers, core) : 0;
+    lb = lbFromFt(ft, gpm);
+  }else{
+    lb = known;
+    ft = gpm > 0 ? ftFromLb(lb, gpm) : 0;
+    od = gauge > 0 ? odFromFt(ft, gauge, layers, core) : 0;
+  }
+  return { gpm:gpm, od:od, ft:ft, lb:lb, flat:flatWidth(w, gus, lip, layers) };
+}
+
+var E_IDS = { w:"e_w", g:"e_g", lip:"e_lip", gauge:"e_gauge", layers:"e_layers",
+              col:"e_col", core:"e_core", known:"e_known" };
+
+function renderExtRoll(){
+  var r = calcRoll("e", E_SOLVE, E_IDS);
+  var labels = { od:["Roll OD","in"], ft:["Footage","ft"], lb:["Weight","lb"] };
+  $("#e_o1k").textContent = labels[E_SOLVE][0];
+  $("#e_knownLbl").textContent = E_SOLVE === "od" ? "roll OD in inches"
+                              : E_SOLVE === "ft" ? "footage in feet" : "weight in pounds";
+
+  var main = E_SOLVE === "od" ? r.od : (E_SOLVE === "ft" ? r.ft : r.lb);
+  $("#e_o1").innerHTML = fmt(main, E_SOLVE === "od" ? 2 : 0) +
+    '<small>' + labels[E_SOLVE][1] + '</small>';
+
+  put("e_ft", r.ft, 0, "ft");
+  put("e_lb", r.lb, 1, "lb");
+  put("e_gpm", r.gpm, 2, "g/m");
+  var yieldFtLb = (r.gpm * W()) > 0 ? (r.flat / 12) / (r.gpm * W()) : 0;
+  put("e_yield", yieldFtLb, 2, "ft²/lb");
+  put("e_lbk", r.gpm * W() * 1000, 1, "lb");
+}
+
+$("#e_solve").addEventListener("click", function(ev){
+  var s = ev.target.getAttribute && ev.target.getAttribute("data-s");
+  if(!s) return;
+  E_SOLVE = s;
+  $$("#e_solve button").forEach(function(b){ b.classList.toggle("on", b.dataset.s === s); });
+  $("#e_known").value = s === "od" ? 18 : (s === "ft" ? 2800 : 780);
+  renderExtRoll();
+});
+
+/* ══════════ press roll ══════════ */
+var P_SOLVE = "od";
+var P_IDS = { w:"p_w", g:"p_g", lip:"p_lip", gauge:"p_gauge", layers:"p_layers",
+              col:"p_col", core:"p_core", known:"p_known" };
+function renderPressRoll(){
+  var r = calcRoll("p", P_SOLVE, P_IDS);
+  var labels = { od:["Roll OD","in"], ft:["Footage","ft"], lb:["Weight","lb"] };
+  $("#p_o1k").textContent = labels[P_SOLVE][0];
+  $("#p_knownLbl").textContent = P_SOLVE === "od" ? "roll OD in inches"
+                              : P_SOLVE === "ft" ? "footage in feet" : "weight in pounds";
+  var main = P_SOLVE === "od" ? r.od : (P_SOLVE === "ft" ? r.ft : r.lb);
+  $("#p_o1").innerHTML = fmt(main, P_SOLVE === "od" ? 2 : 0) + '<small>' + labels[P_SOLVE][1] + '</small>';
+  put("p_ft", r.ft, 0, "ft");
+  put("p_lb", r.lb, 1, "lb");
+  put("p_gpm", r.gpm, 2, "g/m");
+}
+$("#p_type").innerHTML = FILM_TYPES.map(function(f, i){
+  return '<option value="' + i + '">' + f.name + '</option>';
+}).join("");
+$("#p_type").addEventListener("change", function(){
+  $("#p_layers").value = FILM_TYPES[+this.value].layers;
+  renderPressRoll();
+});
+
+$("#p_solve").addEventListener("click", function(ev){
+  var s = ev.target.getAttribute && ev.target.getAttribute("data-s");
+  if(!s) return;
+  P_SOLVE = s;
+  $$("#p_solve button").forEach(function(b){ b.classList.toggle("on", b.dataset.s === s); });
+  $("#p_known").value = s === "od" ? 18 : (s === "ft" ? 2800 : 780);
+  renderPressRoll();
+});
+
+/* ══════════ gram weight ══════════ */
+function renderGram(){
+  var flat = flatWidth(num("g_w"), num("g_g"), num("g_lip"), num("g_layers") || 1);
+  var gpm = gramPerM(num("g_w"), num("g_g"), num("g_lip"), num("g_gauge"), num("g_layers") || 1, num("g_den"));
+  put("g_out", gpm, 2, "g/m");
+  put("g_km", gpm, 1, "kg");                       /* g/m x 1000 m = kg */
+  put("g_lbk", gpm * W() * 1000, 2, "lb");
+  put("g_flat", flat, 2, "in");
+}
+
+/* ══════════ BUR ══════════ */
+var B_SOLVE = "bur";
+function renderBUR(){
+  var die = num("b_dia"), known = num("b_known");
+  var b, lay;
+  if(B_SOLVE === "bur"){ lay = known; b = bur(lay, die); }
+  else { b = known; lay = layflatFromBUR(b, die); }
+  $("#b_ok").textContent = B_SOLVE === "bur" ? "BUR" : "Layflat";
+  $("#b_lbl").textContent = B_SOLVE === "bur" ? "layflat in inches" : "target BUR";
+  $("#b_out").innerHTML = B_SOLVE === "bur"
+    ? fmt(b, 3)
+    : fmt(lay, 2) + '<small>in</small>';
+  put("b_lay", lay, 2, "in");
+  put("b_bub", 2 * lay / Math.PI, 2, "in");
+  put("b_cir", Math.PI * die, 2, "in");
+}
+$("#b_solve").addEventListener("click", function(ev){
+  var s = ev.target.getAttribute && ev.target.getAttribute("data-s");
+  if(!s) return;
+  B_SOLVE = s;
+  $$("#b_solve button").forEach(function(b){ b.classList.toggle("on", b.dataset.s === s); });
+  $("#b_known").value = s === "bur" ? 42.5 : 1.75;
+  renderBUR();
+});
+
+/* ══════════ resin blend ══════════ */
+var LAYERS = [
+  { key:"A", name:"A — outside", resins:[{ name:"", pct:100 }] },
+  { key:"B", name:"B — core",    resins:[{ name:"", pct:100 }] },
+  { key:"C", name:"C — inside",  resins:[{ name:"", pct:100 }] }
+];
+function layerPct(k){ return k === "A" ? num("r_a") : k === "B" ? num("r_b") : num("r_c"); }
+
+function renderBlend(){
+  var total = num("r_total");
+  var split = num("r_a") + num("r_b") + num("r_c");
+  var sumEl = $("#r_sum");
+  sumEl.value = fmt(split, 1) + " %";
+  sumEl.style.color = Math.abs(split - 100) < 0.05 ? "var(--green)" : "var(--red)";
+  sumEl.style.fontWeight = "700";
+
+  $("#r_layers").innerHTML = LAYERS.map(function(L, li){
+    var lp = layerPct(L.key);
+    var lbhr = total * lp / 100;
+    var rsum = L.resins.reduce(function(a, r){ return a + (parseFloat(r.pct) || 0); }, 0);
+    var okCls = Math.abs(rsum - 100) < 0.05 ? "ok" : "bad";
+
+    var rows = L.resins.map(function(r, ri){
+      var pct = parseFloat(r.pct) || 0;
+      return '<tr>' +
+        '<td><input data-l="' + li + '" data-r="' + ri + '" data-f="name" value="' + (r.name || "").replace(/"/g,"&quot;") + '" placeholder="Resin / grade"></td>' +
+        '<td style="width:110px"><input type="number" step="0.1" data-l="' + li + '" data-r="' + ri + '" data-f="pct" value="' + pct + '"></td>' +
+        '<td class="n" style="width:120px">' + fmt(lbhr * pct / 100, 1) + '</td>' +
+        '<td class="n" style="width:110px">' + fmt(total > 0 ? (lbhr * pct / 100) / total * 100 : 0, 2) + ' %</td>' +
+        '<td style="width:90px"><button class="rm" data-del="' + li + '|' + ri + '">Remove</button></td>' +
+      '</tr>';
+    }).join("");
+
+    return '<div style="margin-bottom:18px">' +
+      '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px">' +
+        '<b style="color:var(--ip-blue-dark);font-size:14px">' + L.name + '</b>' +
+        '<span style="font-size:12.5px;color:var(--muted)">' + fmt(lp, 1) + '% of structure · ' +
+          '<b style="color:var(--ink)">' + fmt(lbhr, 1) + ' lb/hr</b></span>' +
+        '<span class="pct ' + okCls + '" style="font-size:12.5px;margin-left:auto">resins total ' + fmt(rsum, 1) + '%</span>' +
+      '</div>' +
+      '<table class="t"><thead><tr>' +
+        '<th>Resin</th><th style="width:110px">% of layer</th><th style="width:120px">lb/hr</th>' +
+        '<th style="width:110px">% of total</th><th style="width:90px"></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<div class="acts" style="margin-top:8px"><button class="btn-out" data-add="' + li + '">+ Add resin to ' + L.key + '</button></div>' +
+    '</div>';
+  }).join("");
+}
+
+$("#r_layers").addEventListener("input", function(ev){
+  var li = ev.target.getAttribute("data-l"), ri = ev.target.getAttribute("data-r"),
+      f = ev.target.getAttribute("data-f");
+  if(li === null || ri === null || !f) return;
+  LAYERS[+li].resins[+ri][f] = f === "pct" ? ev.target.value : ev.target.value;
+  if(f === "pct") renderBlend();       /* names must not steal focus mid-typing */
+});
+$("#r_layers").addEventListener("click", function(ev){
+  var add = ev.target.getAttribute && ev.target.getAttribute("data-add");
+  if(add !== null && add !== undefined && add !== ""){
+    LAYERS[+add].resins.push({ name:"", pct:0 });
+    renderBlend();
+    return;
+  }
+  var del = ev.target.getAttribute && ev.target.getAttribute("data-del");
+  if(del){
+    var p = del.split("|");
+    if(LAYERS[+p[0]].resins.length <= 1){ alert("Each layer needs at least one resin."); return; }
+    LAYERS[+p[0]].resins.splice(+p[1], 1);
+    renderBlend();
+  }
+});
+$("#r_reset").addEventListener("click", function(){
+  $("#r_a").value = 30; $("#r_b").value = 50; $("#r_c").value = 20;
+  renderBlend();
+});
+
+/* ══════════ output & rate ══════════ */
+var T_MODE = "mono", T_SOLVE = "lbhr";
+
+function throughputMono(w, mil, fpm, dens){ return w * mil * fpm * dens * LB_HR; }
+function fpmFromLbhr(w, mil, dens, lbhr){
+  var d = w * mil * dens * LB_HR;
+  return d > 0 ? lbhr / d : 0;
+}
+
+function renderThroughput(){
+  var w = num("t_w"), mil = num("t_mil");
+  var coex = T_MODE === "coex";
+
+  $("#t_coex").style.display = coex ? "" : "none";
+  $("#t_densWrap").style.display = coex ? "none" : "";
+  $("#t_fpmWrap").style.display = T_SOLVE === "lbhr" ? "" : "none";
+  $("#t_tgtWrap").style.display = T_SOLVE === "fpm" ? "" : "none";
+
+  /* a coex structure's effective density is its layers weighted by gauge share */
+  var split = [
+    { key:"A", pct:num("r_a"), dens:num("t_dA") },
+    { key:"B", pct:num("r_b"), dens:num("t_dB") },
+    { key:"C", pct:num("r_c"), dens:num("t_dC") }
+  ];
+  var pctSum = split.reduce(function(a,x){ return a + x.pct; }, 0);
+  var effDens = coex && pctSum > 0
+    ? split.reduce(function(a,x){ return a + x.dens * x.pct / 100; }, 0)
+    : num("t_dens");
+
+  var fpm, lbhr;
+  if(T_SOLVE === "lbhr"){
+    fpm = num("t_fpm");
+    lbhr = throughputMono(w, mil, fpm, effDens);
+  }else{
+    lbhr = num("t_tgt");
+    fpm = fpmFromLbhr(w, mil, effDens, lbhr);
+  }
+
+  $("#t_mainK").textContent = T_SOLVE === "lbhr" ? "Output" : "Line speed";
+  $("#t_main").innerHTML = T_SOLVE === "lbhr"
+    ? fmt(lbhr, 1) + '<small>lb/hr</small>'
+    : fmt(fpm, 1) + '<small>ft/min</small>';
+  put("t_ofpm", fpm, 1, "ft/min");
+  put("t_shift", lbhr * 8, 0, "lb");
+  put("t_mpm", fpm * 0.3048, 1, "m/min");
+  /* g/m straight from the throughput, independent of the roll card */
+  put("t_gpm", fpm > 0 ? lbhr / (60 * fpm * W()) : 0, 2, "g/m");
+
+  if(coex){
+    $("#t_rows").innerHTML = split.map(function(L){
+      var lmil = mil * L.pct / 100;
+      var llb = throughputMono(w, lmil, fpm, L.dens);
+      return '<tr>' +
+        '<td><b>' + L.key + '</b></td>' +
+        '<td class="n">' + fmt(L.pct, 1) + ' %</td>' +
+        '<td class="n">' + fmt(lmil, 3) + ' mil</td>' +
+        '<td class="n">' + fmt(L.dens, 3) + '</td>' +
+        '<td class="n">' + fmt(llb, 1) + ' lb/hr</td>' +
+      '</tr>';
+    }).join("") +
+    '<tr><td colspan="2"><b>Total</b></td>' +
+      '<td class="n"><b>' + fmt(mil * pctSum / 100, 3) + ' mil</b></td>' +
+      '<td class="n">' + fmt(effDens, 4) + '</td>' +
+      '<td class="n"><b>' + fmt(split.reduce(function(a,L){
+        return a + throughputMono(w, mil * L.pct / 100, fpm, L.dens); }, 0), 1) + ' lb/hr</b></td></tr>';
+  }
+}
+
+$("#t_mode").addEventListener("click", function(ev){
+  var m = ev.target.getAttribute && ev.target.getAttribute("data-m");
+  if(!m) return;
+  T_MODE = m;
+  $$("#t_mode button").forEach(function(b){ b.classList.toggle("on", b.dataset.m === m); });
+  renderThroughput();
+});
+$("#t_solve").addEventListener("click", function(ev){
+  var s = ev.target.getAttribute && ev.target.getAttribute("data-s");
+  if(!s) return;
+  T_SOLVE = s;
+  $$("#t_solve button").forEach(function(b){ b.classList.toggle("on", b.dataset.s === s); });
+  renderThroughput();
+});
+$("#t_send").addEventListener("click", function(){
+  var v = parseFloat($("#t_main").textContent.replace(/[^0-9.]/g, ""));
+  if(T_SOLVE !== "lbhr"){
+    v = parseFloat($("#t_shift").textContent.replace(/[^0-9.]/g, "")) / 8;
+  }
+  if(isFinite(v) && v > 0){
+    $("#r_total").value = Math.round(v * 10) / 10;
+    renderBlend();
+    $("#r_total").scrollIntoView({ behavior:"smooth", block:"center" });
+  }
+});
+
+function renderOutput(){
+  var gpm = num("o_gpm"), v = num("o_val"), which = $("#o_which").value;
+  var fpm, lbhr;
+  if(which === "fpm"){ fpm = v; lbhr = fpm * 60 * gpm * W(); }
+  else { lbhr = v; fpm = (60 * gpm * W()) > 0 ? lbhr / (60 * gpm * W()) : 0; }
+  put("o_fpm", fpm, 1, "ft/min");
+  put("o_lbhr", lbhr, 1, "lb/hr");
+  put("o_shift", lbhr * 8, 0, "lb");
+  put("o_mpm", fpm * 0.3048, 1, "m/min");
+}
+
+/* ══════════ impressions & planner ══════════ */
+function renderImp(){
+  var ft = num("i_ft"), rep = num("i_rep"), up = num("i_up") || 1;
+  var imp = impressions(ft, rep);
+  put("i_out", imp, 0);
+  put("i_tot", imp * up, 0, "pcs");
+  put("i_per", rep > 0 ? 1000 * rep / 12 : 0, 1, "ft");
+}
+function renderPlan(){
+  var imp = num("j_imp"), rep = num("j_rep"), waste = num("j_waste"),
+      perRoll = num("j_roll"), gpm = num("j_gpm");
+  var ft = imp * rep / 12;
+  var ftw = ft * (1 + waste / 100);
+  put("j_ft", ft, 0, "ft");
+  put("j_ftw", ftw, 0, "ft");
+  put("j_rolls", perRoll > 0 ? Math.ceil(ftw / perRoll) : 0, 0);
+  put("j_lb", lbFromFt(ftw, gpm), 1, "lb");
+}
+
+/* ══════════ unit converter ══════════ */
+var CONV = [
+  { title:"Length", units:[
+    ["Inch","in",1],["Millimetre","mm",25.4],["Centimetre","cm",2.54],
+    ["Foot","ft",1/12],["Metre","m",0.0254],["Yard","yd",1/36]] },
+  { title:"Film gauge / thickness", units:[
+    ["Mil","mil",1],["Micron","µm",25.4],["Inch","in",0.001],
+    ["Millimetre","mm",0.0254],["Gauge","ga",100]] },
+  { title:"Weight", units:[
+    ["Pound","lb",1],["Kilogram","kg",0.45359237],["Gram","g",453.59237],
+    ["Ounce","oz",16],["Metric ton","t",0.00045359237]] },
+  { title:"Speed", units:[
+    ["Feet / min","fpm",1],["Metres / min","m/min",0.3048],
+    ["Feet / sec","ft/s",1/60],["Metres / sec","m/s",0.00508]] },
+  { title:"Area", units:[
+    ["Square inch","in²",1],["Square foot","ft²",1/144],
+    ["Square metre","m²",0.00064516],["MSI (1000 in²)","msi",0.001]] },
+  { title:"Rate", units:[
+    ["Pounds / hour","lb/hr",1],["Kilograms / hour","kg/hr",0.45359237],
+    ["Pounds / shift (8 hr)","lb/shift",8],["Pounds / day (24 hr)","lb/day",24]] }
+];
+
+function buildConverters(){
+  $("#convCards").innerHTML = CONV.map(function(c, i){
+    var opts = c.units.map(function(u, ui){
+      return '<option value="' + ui + '">' + u[0] + ' (' + u[1] + ')</option>';
+    }).join("");
+    return '<div class="card"><div class="card-head">' + c.title + '</div><div class="card-body">' +
+      '<div class="conv">' +
+        '<div class="fld"><label>From</label>' +
+          '<input type="number" step="any" id="cv' + i + 'a" value="1">' +
+          '<select id="cs' + i + 'a">' + opts + '</select></div>' +
+        '<div class="eq">=</div>' +
+        '<div class="fld"><label>To</label>' +
+          '<input type="number" step="any" id="cv' + i + 'b" readonly>' +
+          '<select id="cs' + i + 'b">' + opts + '</select></div>' +
+      '</div>' +
+      '<div class="hint" style="font-size:11.5px;color:var(--muted)" id="cn' + i + '"></div>' +
+    '</div></div>';
+  }).join("");
+
+  CONV.forEach(function(c, i){
+    /* select the second unit by default so the card shows a real conversion */
+    $("#cs" + i + "b").value = "1";
+    ["cv" + i + "a", "cs" + i + "a", "cs" + i + "b"].forEach(function(id){
+      $("#" + id).addEventListener("input", function(){ convert(i); });
+      $("#" + id).addEventListener("change", function(){ convert(i); });
+    });
+    convert(i);
+  });
+}
+function convert(i){
+  var c = CONV[i];
+  var v = parseFloat($("#cv" + i + "a").value);
+  if(!isFinite(v)) v = 0;
+  var a = c.units[+$("#cs" + i + "a").value], b = c.units[+$("#cs" + i + "b").value];
+  /* every factor is "units per base", so go through the base */
+  var base = v / a[2];
+  var out = base * b[2];
+  $("#cv" + i + "b").value = Math.round(out * 1e6) / 1e6;
+  $("#cn" + i).textContent = "1 " + a[1] + " = " + (Math.round((b[2] / a[2]) * 1e6) / 1e6) + " " + b[1];
+}
+
+/* ══════════ wiring ══════════ */
+function recalcAll(){
+  renderExtRoll(); renderPressRoll(); renderGram(); renderBUR();
+  renderBlend(); renderThroughput(); renderImp(); renderPlan();
+}
+
+$$(".tab").forEach(function(b){
+  b.addEventListener("click", function(){
+    $$(".tab").forEach(function(x){ x.classList.toggle("on", x === b); });
+    $$(".panel").forEach(function(p){ p.classList.toggle("on", p.id === "p-" + b.dataset.tab); });
+  });
+});
+$("#btnPrint").addEventListener("click", function(){ window.print(); });
+$("#kMode").addEventListener("change", function(){ MODE = this.value; recalcAll(); });
+
+/* ---- cores ----
+   Cores are named by their inside diameter but the roll maths only cares about
+   the outside diameter, because that is where the film starts winding.
+   A 3in core is 4in OD; a 6in core is 7in OD. Getting this backwards inflates
+   footage badly, so the OD is never typed by hand unless "Custom" is chosen. */
+function wireCore(pfx, redraw){
+  var sel = $("#" + pfx + "_coreSel"), inp = $("#" + pfx + "_core"), wrap = $("#" + pfx + "_coreWrap");
+  if(!sel) return;
+  sel.addEventListener("change", function(){
+    if(this.value === "custom"){
+      wrap.style.display = "";
+      inp.removeAttribute("readonly");
+    }else{
+      wrap.style.display = "none";
+      inp.value = this.value;
+    }
+    redraw();
+  });
+  inp.addEventListener("input", redraw);
+}
+wireCore("e", renderExtRoll);
+wireCore("p", renderPressRoll);
+
+/* film type sets layers */
+$("#e_type").innerHTML = FILM_TYPES.map(function(f, i){
+  return '<option value="' + i + '">' + f.name + '</option>';
+}).join("");
+$("#e_type").addEventListener("change", function(){
+  $("#e_layers").value = FILM_TYPES[+this.value].layers;
+  renderExtRoll();
+});
+
+/* die presets */
+$("#b_die").innerHTML = DIES.map(function(d, i){
+  return '<option value="' + i + '">' + d.name + '</option>';
+}).join("");
+$("#b_die").addEventListener("change", function(){
+  var d = DIES[+this.value];
+  if(d.dia > 0) $("#b_dia").value = d.dia;
+  renderBUR();
+});
+
+/* every numeric input recalculates its own card */
+var MAP = [
+  [["e_w","e_g","e_lip","e_gauge","e_layers","e_col","e_core","e_known"], renderExtRoll],
+  [["p_w","p_g","p_lip","p_gauge","p_layers","p_col","p_core","p_known"], renderPressRoll],
+  [["g_w","g_g","g_lip","g_gauge","g_layers","g_den"], renderGram],
+  [["b_dia","b_known"], renderBUR],
+  [["r_total","r_a","r_b","r_c"], function(){ renderBlend(); renderThroughput(); }],
+  [["t_w","t_mil","t_fpm","t_tgt","t_dens","t_dA","t_dB","t_dC"], renderThroughput],
+  [["i_ft","i_rep","i_up"], renderImp],
+  [["j_imp","j_rep","j_waste","j_roll","j_gpm"], renderPlan]
+];
+MAP.forEach(function(pair){
+  pair[0].forEach(function(id){
+    var el = $("#"+id);
+    if(!el) return;
+    el.addEventListener("input", pair[1]);
+    el.addEventListener("change", pair[1]);
+  });
+});
+
+document.getElementById("logo").src = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEBLAEsAAD/4QvkRXhpZgAATU0AKgAAAAgABwESAAMAAAABAAEAAAEaAAUAAAABAAAAYgEbAAUAAAABAAAAagEoAAMAAAABAAIAAAExAAIAAAAkAAAAcgEyAAIAAAAUAAAAlodpAAQAAAABAAAAqgAAANYALcbAAAAnEAAtxsAAACcQQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkAMjAxNToxMToxMSAxMjoxOToxNQAAA6ABAAMAAAABAAEAAKACAAQAAAABAAARk6ADAAQAAAABAAAFMQAAAAAAAAAGAQMAAwAAAAEABgAAARoABQAAAAEAAAEkARsABQAAAAEAAAEsASgAAwAAAAEAAgAAAgEABAAAAAEAAAE0AgIABAAAAAEAAAqnAAAAAAAAAEgAAAABAAAASAAAAAH/2P/bAEMACAYGBwYFCAcHBwkJCAoMFA0MCwsMGRITDxQdGh8eHRocHCAkLicgIiwjHBwoNyksMDE0NDQfJzk9ODI8LjM0Mv/bAEMBCQkJDAsMGA0NGDIhHCEyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMv/AABEIACQAoAMBIQACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APf6QkDrQBVtNV0+/eRLO+trh4jiRYZVcp9cHirdNpp2Yk09gopDCigAooAKKACigBnmx+b5W9fMxu2Z5x649KfQBXu72CyjDzvt3EhFVSzOQC2FUZLHAJwATwa43UviBcWniJtHg0KSSRIjKzSTktjt8sSSEZGD82DyMgcZ1pUvaO1zKrV9mr2N3TPF2i6l5cMep2bXjfKYI5txLgchcgFgMHnHOM1uA5AIzyM8ionCUHaSLhOM1eLA9K8bt/G0fiLxu8d9psmp6a4aKxsPKRxvyMSFXwM7Q3J+6GI6Zrpw1H2ilK9rIwxFXkcY92bHg+08KyeK9YsE0wyajDcSy7p4UMUQWXAWIc7cZXnGfp0G74S8Uvqmsa3o106/aLC7lWA93hDlRn1K8An3Xvkl1oTk5Ob1ST+RNGcIqKj1uR22taxbtrxQvqkltqn2eC3bZGREIUlKqVUZblsbuvAyOTUV58QNnhvVPEOnwW95ptnIkaMJirSlxAR/CduPNcEHkGPGOTt4zrNVtfvV8SvoZgTz/KjnSRYpXj2M8oO5guEIWLI3EBmO0HjNZmi+OL3V00Wc6YYbfUpIoxI4ZQrtFLKyruA3hREvzDg+Z6oRQBo33jKzsfGdl4fdo83CYaUyqNkrDKJjOckK3bq0eM7uMweObpbDU55rIW95Y2893JplykkUqwxBxlZMFJdzKnKfKofq2BuAJ9Y17UwNCgWWPT4tXvEiF4hDmNDFvC4cYEjOCg4YYGeCcCO+8Xw6JeXf+l3uoeVPa20trNaPE0HmSshkQiL97nIwozny/lPNAFi38aSzaBqOrNp0aJp9tFcTxrdhycxCZwjKu1gI2Xa2cM2R8oG6pX8XOnhu81b7ACbWO/dovP6/ZnZPvbf4ivpxnvQBqaLdvqaTX8untasZGihaRWV5YlPysVdVZeS3ykepBIIJ1T0oA4bxJ4lt019dLkup7aFAEY20b+fdzHaRbxvjCjDIS24E71AK4JritP1XTo7my22WgT6hDKFlESPI0i7yWEYKBXkHGG8xixXC5Lc+hRpS5Hv8v6/rU4qtRc/9f1/SPRPC/iLTtQnk06zkilijUvbzRQmNZFGNwI2gB13LkDghwQBkgdVXFUg4StI6qclJXQyRQ8TISQGBBIrxj4U2stl461C1nXbNBZyxuvowkjBrpw7/AHNReSOeuv3tNlrVvH2i6U+oL4c0qNdUkmlRtQZEYMGclnDAkuCeQDx07DFM+EVneXXiDUtYlLPF5LRPK+SZJXdWOD0J+Uk85+YetdUqLpYeUpu7djnjVVWvGMFojuo/Ct3bXMs1re2cJkuftR/cXBJkwRlv9IAJwcHjBAGRwMMn8Iz3Nje2Usmj/Zb6f7RcxJp0iiWT5cscTjklQT6kZ615J6Y+fwvqFxeNdvqVoJ3REZ44blMquSoO25HQkke5J6mo18I3SafZ2CXlglvZNvtljtZ1MRwV+VhcZHDMOvQ4oArS+GpGK6dJdWr/AL9LwObG6bEqrtVjL9o4ICDALcYHtUknhSRbaaB59NaKaIWzKLGdisRI/dri4ykfTKjC4HIxTsK6Ls+iX1zpI025utGuLERqnkz6a8ilVxjO6c5xgHJ9M1HH4cukbJn0aWXejmWfTZJZGZCShLtOWJUk7cnjtikO6IF0t4LVTC2i+RuEQSDQ5GGY3ZlG1ZeivuIOMAnI5NSW+lz3cc7K+jBZVdJRNokibhKFdwQ0o4bKlh3PXkHDsxcyOksxcLbhbqaKaYdXijMa/wDfJZiPzqvrgujoOoixz9sNtIIMNt/ebTt5yMc47ihbg9jx61hvLjToxPi9uLZBqd1czEfamt5LaJH8h2PzEYcE9NyJk54rA0bTLmy8YiEgSSabch2C9JGSQBFGccPIUUHtvBxgV7NGcYxkl2/r8zyqsXKUX5nV2P2jTtX8O6Nexx21xpENyJ2tpVO1ZwEjJ2/dcuy8f7Snvget6cCum2oaXzmEKAyZzv4HPU9evU/U15+Ktpb+tWztw99b/wBaFquY8Q+C7TWmuri3uJdPvrmD7PNcQgHzY8j5XXuOAOCCQACccVjTqOnK6NqkFONjkbf4LwrcIbnXJJIOd6xWwRjx2YswHOOxr0rTdNtNIsYrKxhENtECEQEnGTk8nk8mt8Ti5V7K1kjDD4aNG73ZborkOoKKAMWfwzY3OpzX8xd55JInDFUynlsjKqtt3Bd0YJXOMlvWqsHhOJIGsXlf+z0txaxR/KWaMxlH3Ntzz8nGT/q15x8ovnZDgrj5vCFjJLO8dzewCc7nWKbA3+d524ZBwdxPT+8e/NIng7T4bdLe3kngt0WdRBHs8rbMzMylCpUgF+ARj5VznFHOw5EaMGjwQrErM0yxPJKBKqHMjvv39OGBJxjH3j7VnS+DrCW2a3Wa6jiNotmFR1AWNUlQYGOuJm/75X0OUptByI2bKzNnG6G5nnLNuLTMCQSBnGAMDOTjoMnGBgCS5gS6tZYJN2yVCjbWKnBGDgjkH3pXKtpY8o8TadJb6qs+sX8lk8EZ8nUVhGD1BCbQAysu4tExDA7tpdWINa+tdasPC9oB5/lwNCftMU93I3lg5Di3cBIyoUE7iApA+7la74zjyx5lp/Wn9f5HFKMruzJ/CehHUbndZyXBTzd91dyEMWk5PmCRWIL4ZgFXdtLEs5+4fXEUIgVVCqowAB0rnxMnKeu5vQjaOg6iuc3CigAooAKKACigAooAKKACigCOaGK4heGeNJYpFKujqCrA9QQeorKPhPw7nd/YWm56f8eqY/LFVGpOGkXYiVOMviVzWjjSNFSNQqKAFVRgAegp9SWf/9kA/+0VkFBob3Rvc2hvcCAzLjAAOEJJTQQEAAAAAAAzHAFaAAMbJUccAgAAAgAAHAIFAB9JbnRlcGxhc3QgRW5naW5lZXJlZCBGaWxtcyBMb2dvADhCSU0EJQAAAAAAEOb1qJ7CsKCe5m/cdQy4bpw4QklNBDoAAAAAAOUAAAAQAAAAAQAAAAAAC3ByaW50T3V0cHV0AAAABQAAAABQc3RTYm9vbAEAAAAASW50ZWVudW0AAAAASW50ZQAAAABDbHJtAAAAD3ByaW50U2l4dGVlbkJpdGJvb2wAAAAAC3ByaW50ZXJOYW1lVEVYVAAAAAEAAAAAAA9wcmludFByb29mU2V0dXBPYmpjAAAADABQAHIAbwBvAGYAIABTAGUAdAB1AHAAAAAAAApwcm9vZlNldHVwAAAAAQAAAABCbHRuZW51bQAAAAxidWlsdGluUHJvb2YAAAAJcHJvb2ZDTVlLADhCSU0EOwAAAAACLQAAABAAAAABAAAAAAAScHJpbnRPdXRwdXRPcHRpb25zAAAAFwAAAABDcHRuYm9vbAAAAAAAQ2xicmJvb2wAAAAAAFJnc01ib29sAAAAAABDcm5DYm9vbAAAAAAAQ250Q2Jvb2wAAAAAAExibHNib29sAAAAAABOZ3R2Ym9vbAAAAAAARW1sRGJvb2wAAAAAAEludHJib29sAAAAAABCY2tnT2JqYwAAAAEAAAAAAABSR0JDAAAAAwAAAABSZCAgZG91YkBv4AAAAAAAAAAAAEdybiBkb3ViQG/gAAAAAAAAAAAAQmwgIGRvdWJAb+AAAAAAAAAAAABCcmRUVW50RiNSbHQAAAAAAAAAAAAAAABCbGQgVW50RiNSbHQAAAAAAAAAAAAAAABSc2x0VW50RiNQeGxAcsAAAAAAAAAAAAp2ZWN0b3JEYXRhYm9vbAEAAAAAUGdQc2VudW0AAAAAUGdQcwAAAABQZ1BDAAAAAExlZnRVbnRGI1JsdAAAAAAAAAAAAAAAAFRvcCBVbnRGI1JsdAAAAAAAAAAAAAAAAFNjbCBVbnRGI1ByY0BZAAAAAAAAAAAAEGNyb3BXaGVuUHJpbnRpbmdib29sAAAAAA5jcm9wUmVjdEJvdHRvbWxvbmcAAAAAAAAADGNyb3BSZWN0TGVmdGxvbmcAAAAAAAAADWNyb3BSZWN0UmlnaHRsb25nAAAAAAAAAAtjcm9wUmVjdFRvcGxvbmcAAAAAADhCSU0D7QAAAAAAEAEsAAAAAQABASwAAAABAAE4QklNBCYAAAAAAA4AAAAAAAAAAAAAP4AAADhCSU0EDQAAAAAABAAAAFo4QklNBBkAAAAAAAQAAAAeOEJJTQPzAAAAAAAJAAAAAAAAAAABADhCSU0nEAAAAAAACgABAAAAAAAAAAE4QklNA/UAAAAAAEgAL2ZmAAEAbGZmAAYAAAAAAAEAL2ZmAAEAoZmaAAYAAAAAAAEAMgAAAAEAWgAAAAYAAAAAAAEANQAAAAEALQAAAAYAAAAAAAE4QklNA/gAAAAAAHAAAP////////////////////////////8D6AAAAAD/////////////////////////////A+gAAAAA/////////////////////////////wPoAAAAAP////////////////////////////8D6AAAOEJJTQQAAAAAAAACAAA4QklNBAIAAAAAAAIAADhCSU0EMAAAAAAAAQEAOEJJTQQtAAAAAAAGAAEAAAACOEJJTQQIAAAAAAAQAAAAAQAAAkAAAAJAAAAAADhCSU0EHgAAAAAABAAAAAA4QklNBBoAAAAAA3MAAAAGAAAAAAAAAAAAAAUxAAARkwAAAB8ASQBuAHQAZQBwAGwAYQBzAHQAIABFAG4AZwBpAG4AZQBl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LmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtbG5zOmlsbHVzdHJhdG9yPSJodHRwOi8vbnMuYWRvYmUuY29tL2lsbHVzdHJhdG9yLzEuMC8iIHhtbG5zOnhtcFRQZz0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3QvcGcvIiB4bWxuczpzdERpbT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL0RpbWVuc2lvbnMjIiB4bWxuczp4bXBHPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvZy8iIHhtbG5zOnBkZj0iaHR0cDovL25zLmFkb2JlLmNvbS9wZGYvMS4zLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiBkYzpmb3JtYXQ9ImltYWdlL2pwZWciIHhtcDpNZXRhZGF0YURhdGU9IjIwMTUtMTEtMTFUMTI6MTk6MTUtMDU6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDE1LTExLTExVDEyOjE5OjE1LTA1OjAwIiB4bXA6Q3JlYXRlRGF0ZT0iMjAxNS0xMS0xMVQxMjoxNTowMy0wNTowMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBJbGx1c3RyYXRvciBDQyAyMDE1IChNYWNpbnRvc2gpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjZmNmI3ZDY0LWUzODktNDMyYS1iNGM4LTA2OGM1MDE4ODU2MiIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOjViNDRlMjYwLWM4YTItMTE3OC04YzljLWY0M2U5OWQxNGY5MSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ1dWlkOjVEMjA4OTI0OTNCRkRCMTE5MTRBODU5MEQzMTUwOEM4IiB4bXBNTTpSZW5kaXRpb25DbGFzcz0icHJvb2Y6cGRmIiBpbGx1c3RyYXRvcjpTdGFydHVwUHJvZmlsZT0iUHJpbnQiIGlsbHVzdHJhdG9yOlR5cGU9IkRvY3VtZW50IiB4bXBUUGc6SGFzVmlzaWJsZU92ZXJwcmludD0iRmFsc2UiIHhtcFRQZzpIYXNWaXNpYmxlVHJhbnNwYXJlbmN5PSJGYWxzZSIgeG1wVFBnOk5QYWdlcz0iMSIgcGRmOlByb2R1Y2VyPSJBZG9iZSBQREYgbGlicmFyeSAxNS4wMCIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIj4NCgkJCTxkYzp0aXRsZT4NCgkJCQk8cmRmOkFsdD4NCgkJCQkJPHJkZjpsaSB4bWw6bGFuZz0ieC1kZWZhdWx0Ij5JbnRlcGxhc3QgRW5naW5lZXJlZCBGaWxtcyBMb2dvPC9yZGY6bGk+DQoJCQkJPC9yZGY6QWx0Pg0KCQkJPC9kYzp0aXRsZT4NCgkJCTx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjBlNmI3ZDg1LTMzZmUtNDYwOS05N2JjLWQ3NTJmZWVmZjU5NiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowZTZiN2Q4NS0zM2ZlLTQ2MDktOTdiYy1kNzUyZmVlZmY1OTYiIHN0UmVmOm9yaWdpbmFsRG9jdW1lbnRJRD0idXVpZDo1RDIwODkyNDkzQkZEQjExOTE0QTg1OTBEMzE1MDhDOCIgc3RSZWY6cmVuZGl0aW9uQ2xhc3M9InByb29mOnBkZiIvPg0KCQkJPHhtcE1NOkhpc3Rvcnk+DQoJCQkJPHJkZjpTZXE+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDpEQjJDMDMwM0JCOTVFNDExOTEwQ0I2RDAzODJGNjJGNCIgc3RFdnQ6d2hlbj0iMjAxNS0wMS0wNlQxMDo0NToxNi0wNTowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgSWxsdXN0cmF0b3IgQ1M2IChXaW5kb3dzKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY29udmVydGVkIiBzdEV2dDpwYXJhbWV0ZXJzPSJmcm9tIGFwcGxpY2F0aW9uL3Bvc3RzY3JpcHQgdG8gYXBwbGljYXRpb24vdm5kLmFkb2JlLmlsbHVzdHJhdG9yIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjb252ZXJ0ZWQiIHN0RXZ0OnBhcmFtZXRlcnM9ImZyb20gYXBwbGljYXRpb24vcG9zdHNjcmlwdCB0byBhcHBsaWNhdGlvbi92bmQuYWRvYmUuaWxsdXN0cmF0b3IiLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOmIzOTEwNDRlLWIzMTEtNDY2ZC04ODM5LTNlMTA2YmE0MDFmNyIgc3RFdnQ6d2hlbj0iMjAxNS0wNy0yMlQxNjo1NzowNS0wNDowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgSWxsdXN0cmF0b3IgQ0MgMjAxNSAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NzIzZWYyZDktNjVkZS00ODI4LTliZTQtYjM5NTI5YjBhOTFiIiBzdEV2dDp3aGVuPSIyMDE1LTA3LTIyVDE2OjU4OjI1LTA0OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBJbGx1c3RyYXRvciBDQyAyMDE1IChNYWNpbnRvc2gpIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjb252ZXJ0ZWQiIHN0RXZ0OnBhcmFtZXRlcnM9ImZyb20gYXBwbGljYXRpb24vcG9zdHNjcmlwdCB0byBhcHBsaWNhdGlvbi92bmQuYWRvYmUuaWxsdXN0cmF0b3IiLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjUzYWZkMmI5LTZjYjYtNDViMS1hMTVlLWUxMDk4NWQ2NWY5OCIgc3RFdnQ6d2hlbj0iMjAxNS0xMS0wNFQxMzozNDozOS0wNTowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgSWxsdXN0cmF0b3IgQ0MgMjAxNSAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY29udmVydGVkIiBzdEV2dDpwYXJhbWV0ZXJzPSJmcm9tIGFwcGxpY2F0aW9uL3Bvc3RzY3JpcHQgdG8gYXBwbGljYXRpb24vdm5kLmFkb2JlLmlsbHVzdHJhdG9yIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDpiNzlkMjllOS0zMzY2LTQ2ZWQtYWYyYS0yMDM1Y2I5YzMxMWYiIHN0RXZ0OndoZW49IjIwMTUtMTEtMTFUMTI6MTM6NTktMDU6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIElsbHVzdHJhdG9yIENDIDIwMTUgKE1hY2ludG9zaCkiIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjZlZjU3ZWU2LTlkMjgtNGY4MS04M2JmLTM3OTQ0ZDI5YTg4ZiIgc3RFdnQ6d2hlbj0iMjAxNS0xMS0xMVQxMjoxNDo1MS0wNTowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgSWxsdXN0cmF0b3IgQ0MgMjAxNSAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY29udmVydGVkIiBzdEV2dDpwYXJhbWV0ZXJzPSJmcm9tIGFwcGxpY2F0aW9uL3BkZiB0byBhcHBsaWNhdGlvbi92bmQuYWRvYmUucGhvdG9zaG9wIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDowZTZiN2Q4NS0zM2ZlLTQ2MDktOTdiYy1kNzUyZmVlZmY1OTYiIHN0RXZ0OndoZW49IjIwMTUtMTEtMTFUMTI6MTk6MTUtMDU6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE1IChNYWNpbnRvc2gpIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjb252ZXJ0ZWQiIHN0RXZ0OnBhcmFtZXRlcnM9ImZyb20gYXBwbGljYXRpb24vcGRmIHRvIGltYWdlL2pwZWciLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249ImRlcml2ZWQiIHN0RXZ0OnBhcmFtZXRlcnM9ImNvbnZlcnRlZCBmcm9tIGFwcGxpY2F0aW9uL3ZuZC5hZG9iZS5waG90b3Nob3AgdG8gaW1hZ2UvanBlZyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NmY2YjdkNjQtZTM4OS00MzJhLWI0YzgtMDY4YzUwMTg4NTYyIiBzdEV2dDp3aGVuPSIyMDE1LTExLTExVDEyOjE5OjE1LTA1OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxNSAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCTwvcmRmOlNlcT4NCgkJCTwveG1wTU06SGlzdG9yeT4NCgkJCTx4bXBUUGc6TWF4UGFnZVNpemUgc3REaW06dz0iMTUuMDAwMDAwIiBzdERpbTpoPSI0LjQzNzUwMCIgc3REaW06dW5pdD0iSW5jaGVzIi8+DQoJCQk8eG1wVFBnOlBsYXRlTmFtZXM+DQoJCQkJPHJkZjpTZXE+DQoJCQkJCTxyZGY6bGk+QmxhY2s8L3JkZjpsaT4NCgkJCQkJPHJkZjpsaT5PY2VhbjwvcmRmOmxpPg0KCQkJCTwvcmRmOlNlcT4NCgkJCTwveG1wVFBnOlBsYXRlTmFtZXM+DQoJCQk8eG1wVFBnOlN3YXRjaEdyb3Vwcz4NCgkJCQk8cmRmOlNlcT4NCgkJCQkJPHJkZjpsaT4NCgkJCQkJCTxyZGY6RGVzY3JpcHRpb24geG1wRzpncm91cE5hbWU9IkRlZmF1bHQgU3dhdGNoIEdyb3VwIiB4bXBHOmdyb3VwVHlwZT0iMCI+DQoJCQkJCQkJPHhtcEc6Q29sb3JhbnRzPg0KCQkJCQkJCQk8cmRmOlNlcT4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJXaGl0ZSIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMC4wMDAwMDAiIHhtcEc6eWVsbG93PSIwLjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJCbGFjayIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMC4wMDAwMDAiIHhtcEc6eWVsbG93PSIwLjAwMDAwMCIgeG1wRzpibGFjaz0iMTAwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkNNWUsgUmVkIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIxMDAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMTAwLjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDTVlLIFllbGxvdyIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMC4wMDAwMDAiIHhtcEc6eWVsbG93PSIxMDAuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkNNWUsgR3JlZW4iIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjEwMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMC4wMDAwMDAiIHhtcEc6eWVsbG93PSIxMDAuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkNNWUsgQ3lhbiIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMTAwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkNNWUsgQmx1ZSIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMTAwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIxMDAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQ01ZSyBNYWdlbnRhIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIxMDAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz0xNSBNPTEwMCBZPTkwIEs9MTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjE1LjAwMDAwMCIgeG1wRzptYWdlbnRhPSIxMDAuMDAwMDAwIiB4bXBHOnllbGxvdz0iOTAuMDAwMDAwIiB4bXBHOmJsYWNrPSIxMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT05MCBZPTg1IEs9MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iOTAuMDAwMDAwIiB4bXBHOnllbGxvdz0iODUuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9MCBNPTgwIFk9OTUgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSI4MC4wMDAwMDAiIHhtcEc6eWVsbG93PSI5NS4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz0wIE09NTAgWT0xMDAgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSI1MC4wMDAwMDAiIHhtcEc6eWVsbG93PSIxMDAuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9MCBNPTM1IFk9ODUgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIzNS4wMDAwMDAiIHhtcEc6eWVsbG93PSI4NS4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz01IE09MCBZPTkwIEs9MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iNS4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMC4wMDAwMDAiIHhtcEc6eWVsbG93PSI5MC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz0yMCBNPTAgWT0xMDAgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIyMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMC4wMDAwMDAiIHhtcEc6eWVsbG93PSIxMDAuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9NTAgTT0wIFk9MTAwIEs9MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iNTAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMTAwLjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTc1IE09MCBZPTEwMCBLPTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49Ijc1LjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjEwMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz04NSBNPTEwIFk9MTAwIEs9MTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49Ijg1LjAwMDAwMCIgeG1wRzptYWdlbnRhPSIxMC4wMDAwMDAiIHhtcEc6eWVsbG93PSIxMDAuMDAwMDAwIiB4bXBHOmJsYWNrPSIxMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTkwIE09MzAgWT05NSBLPTMwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSI5MC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMzAuMDAwMDAwIiB4bXBHOnllbGxvdz0iOTUuMDAwMDAwIiB4bXBHOmJsYWNrPSIzMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTc1IE09MCBZPTc1IEs9MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iNzUuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjAuMDAwMDAwIiB4bXBHOnllbGxvdz0iNzUuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9ODAgTT0xMCBZPTQ1IEs9MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iODAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjEwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjQ1LjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTcwIE09MTUgWT0wIEs9MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iNzAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjE1LjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9ODUgTT01MCBZPTAgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSI4NS4wMDAwMDAiIHhtcEc6bWFnZW50YT0iNTAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz0xMDAgTT05NSBZPTUgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIxMDAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9Ijk1LjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjUuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9MTAwIE09MTAwIFk9MjUgSz0yNSIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMTAwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIxMDAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMjUuMDAwMDAwIiB4bXBHOmJsYWNrPSIyNS4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTc1IE09MTAwIFk9MCBLPTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49Ijc1LjAwMDAwMCIgeG1wRzptYWdlbnRhPSIxMDAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz01MCBNPTEwMCBZPTAgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSI1MC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMTAwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSIwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9MzUgTT0xMDAgWT0zNSBLPTEwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIzNS4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMTAwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjM1LjAwMDAwMCIgeG1wRzpibGFjaz0iMTAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz0xMCBNPTEwMCBZPTUwIEs9MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMTAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjEwMC4wMDAwMDAiIHhtcEc6eWVsbG93PSI1MC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz0wIE09OTUgWT0yMCBLPTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9Ijk1LjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjIwLjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTI1IE09MjUgWT00MCBLPTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjI1LjAwMDAwMCIgeG1wRzptYWdlbnRhPSIyNS4wMDAwMDAiIHhtcEc6eWVsbG93PSI0MC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz00MCBNPTQ1IFk9NTAgSz01IiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSI0MC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iNDUuMDAwMDAwIiB4bXBHOnllbGxvdz0iNTAuMDAwMDAwIiB4bXBHOmJsYWNrPSI1LjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9NTAgTT01MCBZPTYwIEs9MjUiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjUwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSI1MC4wMDAwMDAiIHhtcEc6eWVsbG93PSI2MC4wMDAwMDAiIHhtcEc6YmxhY2s9IjI1LjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9NTUgTT02MCBZPTY1IEs9NDAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjU1LjAwMDAwMCIgeG1wRzptYWdlbnRhPSI2MC4wMDAwMDAiIHhtcEc6eWVsbG93PSI2NS4wMDAwMDAiIHhtcEc6YmxhY2s9IjQwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9MjUgTT00MCBZPTY1IEs9MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMjUuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjQwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjY1LjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTMwIE09NTAgWT03NSBLPTEwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIzMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iNTAuMDAwMDAwIiB4bXBHOnllbGxvdz0iNzUuMDAwMDAwIiB4bXBHOmJsYWNrPSIxMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTM1IE09NjAgWT04MCBLPTI1IiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIzNS4wMDAwMDAiIHhtcEc6bWFnZW50YT0iNjAuMDAwMDAwIiB4bXBHOnllbGxvdz0iODAuMDAwMDAwIiB4bXBHOmJsYWNrPSIyNS4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTQwIE09NjUgWT05MCBLPTM1IiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSI0MC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iNjUuMDAwMDAwIiB4bXBHOnllbGxvdz0iOTAuMDAwMDAwIiB4bXBHOmJsYWNrPSIzNS4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTQwIE09NzAgWT0xMDAgSz01MCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iNDAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjcwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjEwMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjUwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9NTAgTT03MCBZPTgwIEs9NzAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjUwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSI3MC4wMDAwMDAiIHhtcEc6eWVsbG93PSI4MC4wMDAwMDAiIHhtcEc6YmxhY2s9IjcwLjAwMDAwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9Ik9jZWFuIiB4bXBHOnR5cGU9IlNQT1QiIHhtcEc6dGludD0iMTAwLjAwMDAwMCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOmN5YW49Ijk0LjAwMDAwMCIgeG1wRzptYWdlbnRhPSI2OS4wMDAwMDAiIHhtcEc6eWVsbG93PSIxLjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJCbHVlIiB4bXBHOnR5cGU9IlNQT1QiIHhtcEc6dGludD0iMTAwLjAwMDAwMCIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOmN5YW49Ijk0LjAwMDAwMCIgeG1wRzptYWdlbnRhPSI2OS4wMDAwMDAiIHhtcEc6eWVsbG93PSIxLjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJPC9yZGY6U2VxPg0KCQkJCQkJCTwveG1wRzpDb2xvcmFudHM+DQoJCQkJCQk8L3JkZjpEZXNjcmlwdGlvbj4NCgkJCQkJPC9yZGY6bGk+DQoJCQkJCTxyZGY6bGk+DQoJCQkJCQk8cmRmOkRlc2NyaXB0aW9uIHhtcEc6Z3JvdXBOYW1lPSJHcmF5cyIgeG1wRzpncm91cFR5cGU9IjEiPg0KCQkJCQkJCTx4bXBHOkNvbG9yYW50cz4NCgkJCQkJCQkJPHJkZjpTZXE+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz0wIE09MCBZPTAgSz0xMDAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjEwMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTkwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSI4OS45OTk0MDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTgwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSI3OS45OTg4MDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTcwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSI2OS45OTk3MDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTYwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSI1OS45OTkxMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTUwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSI1MC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTQwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSIzOS45OTk0MDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTMwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSIyOS45OTg4MDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTIwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSIxOS45OTk3MDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0wIFk9MCBLPTEwIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjAuMDAwMDAwIiB4bXBHOmJsYWNrPSI5Ljk5OTEwMCIvPg0KCQkJCQkJCQkJPHJkZjpsaSB4bXBHOnN3YXRjaE5hbWU9IkM9MCBNPTAgWT0wIEs9NSIgeG1wRzptb2RlPSJDTVlLIiB4bXBHOnR5cGU9IlBST0NFU1MiIHhtcEc6Y3lhbj0iMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMC4wMDAwMDAiIHhtcEc6eWVsbG93PSIwLjAwMDAwMCIgeG1wRzpibGFjaz0iNC45OTg4MDAiLz4NCgkJCQkJCQkJPC9yZGY6U2VxPg0KCQkJCQkJCTwveG1wRzpDb2xvcmFudHM+DQoJCQkJCQk8L3JkZjpEZXNjcmlwdGlvbj4NCgkJCQkJPC9yZGY6bGk+DQoJCQkJCTxyZGY6bGk+DQoJCQkJCQk8cmRmOkRlc2NyaXB0aW9uIHhtcEc6Z3JvdXBOYW1lPSJCcmlnaHRzIiB4bXBHOmdyb3VwVHlwZT0iMSI+DQoJCQkJCQkJPHhtcEc6Q29sb3JhbnRzPg0KCQkJCQkJCQk8cmRmOlNlcT4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT0xMDAgWT0xMDAgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSIwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSIxMDAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMTAwLjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTAgTT03NSBZPTEwMCBLPTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9Ijc1LjAwMDAwMCIgeG1wRzp5ZWxsb3c9IjEwMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz0wIE09MTAgWT05NSBLPTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjAuMDAwMDAwIiB4bXBHOm1hZ2VudGE9IjEwLjAwMDAwMCIgeG1wRzp5ZWxsb3c9Ijk1LjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTg1IE09MTAgWT0xMDAgSz0wIiB4bXBHOm1vZGU9IkNNWUsiIHhtcEc6dHlwZT0iUFJPQ0VTUyIgeG1wRzpjeWFuPSI4NS4wMDAwMDAiIHhtcEc6bWFnZW50YT0iMTAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMTAwLjAwMDAwMCIgeG1wRzpibGFjaz0iMC4wMDAwMDAiLz4NCgkJCQkJCQkJCTxyZGY6bGkgeG1wRzpzd2F0Y2hOYW1lPSJDPTEwMCBNPTkwIFk9MCBLPTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjEwMC4wMDAwMDAiIHhtcEc6bWFnZW50YT0iOTAuMDAwMDAwIiB4bXBHOnllbGxvdz0iMC4wMDAwMDAiIHhtcEc6YmxhY2s9IjAuMDAwMDAwIi8+DQoJCQkJCQkJCQk8cmRmOmxpIHhtcEc6c3dhdGNoTmFtZT0iQz02MCBNPTkwIFk9MCBLPTAiIHhtcEc6bW9kZT0iQ01ZSyIgeG1wRzp0eXBlPSJQUk9DRVNTIiB4bXBHOmN5YW49IjYwLjAwMDAwMCIgeG1wRzptYWdlbnRhPSI5MC4wMDAwMDAiIHhtcEc6eWVsbG93PSIwLjAwMzEwMCIgeG1wRzpibGFjaz0iMC4wMDMxMDAiLz4NCgkJCQkJCQkJPC9yZGY6U2VxPg0KCQkJCQkJCTwveG1wRzpDb2xvcmFudHM+DQoJCQkJCQk8L3JkZjpEZXNjcmlwdGlvbj4NCgkJCQkJPC9yZGY6bGk+DQoJCQkJPC9yZGY6U2VxPg0KCQkJPC94bXBUUGc6U3dhdGNoR3JvdXBzPg0KCQk8L3JkZjpEZXNjcmlwdGlvbj4NCgk8L3JkZjpSREY+DQo8L3g6eG1wbWV0YT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg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";
+/* ---- install to home screen ----
+   Chrome and Edge fire beforeinstallprompt; iOS Safari never does, so there
+   the button stays hidden and Share -> Add to Home Screen is the route. */
+var deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();
+  deferredPrompt = e;
+  $("#btnInstall").style.display = "";
+});
+$("#btnInstall").addEventListener("click", function(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function(){
+    deferredPrompt = null;
+    $("#btnInstall").style.display = "none";
+  });
+});
+window.addEventListener("appinstalled", function(){
+  deferredPrompt = null;
+  $("#btnInstall").style.display = "none";
+});
+
+/* ---- offline ----
+   Registered only over http(s); opening the file directly has no service
+   worker, which is fine — it still works, just without offline caching. */
+if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
+
+/* ---- theme ---- */
+var THEME_KEY = "inteplast.calc.theme";
+function applyTheme(mode){
+  document.documentElement.setAttribute("data-theme", mode === "dark" ? "dark" : "light");
+  $("#btnTheme").textContent = mode === "dark" ? "☀ Light" : "🌙 Dark";
+  try{ localStorage.setItem(THEME_KEY, mode); }catch(e){}
+}
+$("#btnTheme").addEventListener("click", function(){
+  var now = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(now);
+});
+(function(){
+  var saved = null;
+  try{ saved = localStorage.getItem(THEME_KEY); }catch(e){}
+  if(!saved && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) saved = "dark";
+  applyTheme(saved || "light");
+})();
+
+buildConverters();
+recalcAll();
+</script>
 </body>
 </html>
