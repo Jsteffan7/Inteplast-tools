@@ -543,6 +543,78 @@
 
 <!-- ═══════════════ CONVERTER ═══════════════ -->
 <div class="panel" id="p-conv">
+  <div class="cards">
+
+    <!-- TAPE MEASURE -->
+    <div class="card">
+      <div class="card-head">Tape Measure — Decimal &harr; Fraction</div>
+      <div class="card-body">
+        <div class="row">
+          <div class="fld"><label>Decimal <span class="u">in</span></label>
+            <input type="number" id="tmDec" step="0.0001" value="3.6875"></div>
+          <div class="fld"><label>Round to</label>
+            <select id="tmDen">
+              <option value="8">1/8</option>
+              <option value="16" selected>1/16</option>
+              <option value="32">1/32</option>
+              <option value="64">1/64</option>
+            </select></div>
+        </div>
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k">On the tape</div><div class="v" id="tmFrac">—</div></div>
+            <div class="o"><div class="k">Millimetres</div><div class="v" id="tmMm">—<small>mm</small></div></div>
+            <div class="o" id="tmErrBox"><div class="k">Rounding</div><div class="v" id="tmErr">—</div></div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:16px">
+          <div class="fld"><label>Fraction &rarr; decimal</label>
+            <input type="text" id="tmFin" value="3 11/16" placeholder="3 11/16">
+            <div class="hint">Type it as you'd read it: <b>3 11/16</b>, <b>11/16</b> or <b>3-11/16</b>.</div></div>
+        </div>
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k">Decimal</div><div class="v" id="tmOut">—<small>in</small></div></div>
+            <div class="o"><div class="k">Millimetres</div><div class="v" id="tmOutMm">—<small>mm</small></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIME -->
+    <div class="card">
+      <div class="card-head">Time — Military &harr; Standard</div>
+      <div class="card-body">
+        <div class="row">
+          <div class="fld"><label>Time</label>
+            <input type="text" id="tiIn" value="14:30" placeholder="1430, 14:30 or 2:30 PM">
+            <div class="hint">Takes either format — <b>1430</b>, <b>14:30</b> or <b>2:30 PM</b>.</div></div>
+        </div>
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k">Military</div><div class="v" id="tiMil">—</div></div>
+            <div class="o hero"><div class="k">Standard</div><div class="v" id="tiStd">—</div></div>
+            <div class="o"><div class="k">Shift hour</div><div class="v" id="tiShift">—</div></div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:16px">
+          <div class="fld"><label>Duration</label>
+            <input type="text" id="tiDur" value="1.75" placeholder="1.75  or  1:45">
+            <div class="hint">Decimal hours or h:mm — converts whichever you type.</div></div>
+        </div>
+        <div class="out">
+          <div class="out-grid">
+            <div class="o hero"><div class="k">Hours &amp; minutes</div><div class="v" id="tiHm">—</div></div>
+            <div class="o"><div class="k">Decimal hours</div><div class="v" id="tiDec">—<small>hr</small></div></div>
+            <div class="o"><div class="k">Minutes</div><div class="v" id="tiMin">—<small>min</small></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
   <div class="cards" id="convCards"></div>
 </div>
 
@@ -1006,6 +1078,117 @@ function renderPlan(){
   put("j_lb", lbFromFt(ftw, gpm), 1, "lb");
 }
 
+/* ══════════ tape measure ══════════
+   Tapes are marked in halves of an inch, so every denominator here is a power
+   of two and reducing is repeated halving. */
+function toFraction(dec, denom){
+  const neg = dec < 0;
+  dec = Math.abs(dec);
+  let whole = Math.floor(dec);
+  let num = Math.round((dec - whole) * denom);
+  let den = denom;
+  if(num >= den){ whole += 1; num = 0; }        /* .97 at 1/16 rounds up a whole */
+  while(num > 0 && num % 2 === 0 && den % 2 === 0){ num /= 2; den /= 2; }
+  return { neg:neg, whole:whole, num:num, den:den, value:(neg?-1:1)*(whole + (num?num/den:0)) };
+}
+function fractionText(f){
+  const sign = f.neg ? "-" : "";
+  if(!f.num) return sign + f.whole + '"';
+  if(!f.whole) return sign + f.num + "/" + f.den + '"';
+  return sign + f.whole + " " + f.num + "/" + f.den + '"';
+}
+/* accepts 3 11/16, 3-11/16, 11/16 or a plain decimal */
+function parseFraction(s){
+  s = String(s || "").trim().replace(/["\u2033]/g, "").replace(/-/g, " ").replace(/\s+/g, " ");
+  if(!s) return NaN;
+  let m = s.match(/^(\d+(?:\.\d+)?)\s+(\d+)\s*\/\s*(\d+)$/);
+  if(m) return parseFloat(m[1]) + parseInt(m[2],10) / parseInt(m[3],10);
+  m = s.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if(m) return parseInt(m[1],10) / parseInt(m[2],10);
+  const n = parseFloat(s);
+  return isFinite(n) ? n : NaN;
+}
+
+function renderTape(){
+  const dec = num("tmDec"), den = parseInt($("#tmDen").value, 10);
+  const f = toFraction(dec, den);
+  $("#tmFrac").textContent = fractionText(f);
+  put("tmMm", dec * 25.4, 2, "mm");
+  const err = f.value - dec;
+  $("#tmErr").textContent = Math.abs(err) < 1e-9
+    ? "exact"
+    : (err > 0 ? "+" : "") + err.toFixed(4) + " in";
+  $("#tmErrBox").classList.toggle("hero", Math.abs(err) < 1e-9);
+
+  const v = parseFraction($("#tmFin").value);
+  if(isFinite(v)){
+    $("#tmOut").innerHTML = fmt(v, 4) + '<small>in</small>';
+    put("tmOutMm", v * 25.4, 2, "mm");
+  }else{
+    $("#tmOut").innerHTML = "—";
+    $("#tmOutMm").innerHTML = "—";
+  }
+}
+
+/* ══════════ time ══════════ */
+function parseClock(s){
+  s = String(s || "").trim().toUpperCase().replace(/\./g, "");
+  if(!s) return null;
+  /* no \b before the meridiem — in "2:30PM" there is no boundary between
+     the digit and the P, so a bare \bPM\b never matches */
+  const pm = /PM/.test(s), am = /AM/.test(s);
+  s = s.replace(/\s*[AP]M/, "").trim();
+  let h, mi;
+  let m = s.match(/^(\d{1,2}):(\d{2})$/);
+  if(m){ h = +m[1]; mi = +m[2]; }
+  else {
+    m = s.match(/^(\d{3,4})$/);                 /* 1430 or 930 */
+    if(m){ const v = m[1]; mi = +v.slice(-2); h = +v.slice(0, -2); }
+    else {
+      m = s.match(/^(\d{1,2})$/);
+      if(m){ h = +m[1]; mi = 0; } else return null;
+    }
+  }
+  if(mi > 59) return null;
+  if(pm && h < 12) h += 12;
+  if(am && h === 12) h = 0;
+  if(h > 23) return null;
+  return { h:h, mi:mi };
+}
+function pad2(n){ return (n < 10 ? "0" : "") + n; }
+
+function renderTime(){
+  const t = parseClock($("#tiIn").value);
+  if(!t){
+    $("#tiMil").textContent = "—"; $("#tiStd").textContent = "—"; $("#tiShift").textContent = "—";
+  }else{
+    $("#tiMil").textContent = pad2(t.h) + pad2(t.mi);
+    const ap = t.h >= 12 ? "PM" : "AM";
+    const h12 = t.h % 12 === 0 ? 12 : t.h % 12;
+    $("#tiStd").textContent = h12 + ":" + pad2(t.mi) + " " + ap;
+    /* the plant runs 6-2, 2-10, 10-6 */
+    const mins = t.h * 60 + t.mi;
+    $("#tiShift").textContent =
+      (mins >= 360 && mins < 840) ? "1st" :
+      (mins >= 840 && mins < 1320) ? "2nd" : "3rd";
+  }
+
+  const raw = String($("#tiDur").value || "").trim();
+  let hrs = NaN;
+  const m = raw.match(/^(\d+):(\d{1,2})$/);
+  if(m) hrs = +m[1] + (+m[2]) / 60;
+  else { const n = parseFloat(raw); if(isFinite(n)) hrs = n; }
+
+  if(isFinite(hrs)){
+    const totalMin = Math.round(hrs * 60);
+    $("#tiHm").textContent = Math.floor(totalMin / 60) + ":" + pad2(totalMin % 60);
+    $("#tiDec").innerHTML = fmt(hrs, 3) + '<small>hr</small>';
+    $("#tiMin").innerHTML = fmt(totalMin, 0) + '<small>min</small>';
+  }else{
+    $("#tiHm").textContent = "—"; $("#tiDec").innerHTML = "—"; $("#tiMin").innerHTML = "—";
+  }
+}
+
 /* ══════════ unit converter ══════════ */
 var CONV = [
   { title:"Length", units:[
@@ -1073,6 +1256,7 @@ function convert(i){
 function recalcAll(){
   renderExtRoll(); renderPressRoll(); renderGram(); renderBUR();
   renderBlend(); renderThroughput(); renderImp(); renderPlan();
+  renderTape(); renderTime();
 }
 
 $$(".tab").forEach(function(b){
@@ -1135,6 +1319,8 @@ var MAP = [
   [["r_total","r_a","r_b","r_c"], function(){ renderBlend(); renderThroughput(); }],
   [["t_w","t_mil","t_fpm","t_tgt","t_dens","t_dA","t_dB","t_dC"], renderThroughput],
   [["i_ft","i_rep","i_up"], renderImp],
+  [["tmDec","tmDen","tmFin"], renderTape],
+  [["tiIn","tiDur"], renderTime],
   [["j_imp","j_rep","j_waste","j_roll","j_gpm"], renderPlan]
 ];
 MAP.forEach(function(pair){
