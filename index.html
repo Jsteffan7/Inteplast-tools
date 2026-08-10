@@ -133,6 +133,21 @@
   h3.sec:first-child{margin-top:0}
   .fx-note{font-size:12.5px;line-height:1.6;color:var(--ink);margin:0 0 10px}
 
+  /* ═════════ update banner ═════════ */
+  .updbar{
+    display:none;align-items:center;gap:12px;flex-wrap:wrap;
+    background:#F0B323;color:#3A2A00;font-size:13.5px;font-weight:600;
+    padding:10px 16px;border-bottom:1px solid #C7901A;
+  }
+  .updbar.on{display:flex}
+  .updbar button{
+    font:inherit;font-size:13px;font-weight:700;padding:6px 14px;border-radius:5px;cursor:pointer;
+    border:1px solid #3A2A00;background:#3A2A00;color:#F0B323;
+  }
+  .updbar button:hover{opacity:.88}
+  .updbar button.ghost{background:transparent;color:#3A2A00}
+  .updbar button.ghost:hover{background:rgba(58,42,0,.1)}
+
   /* ═════════ phone ═════════ */
   @media (max-width:640px){
     .toolbar-inner{padding:8px 12px;gap:7px}
@@ -223,6 +238,7 @@
         <option value="exact">Exact (65.4498 / 0.000672)</option>
       </select>
     </div>
+    <button class="btn" id="btnRefresh" title="Check for a new version and reload">↻ Refresh</button>
     <button class="btn" id="btnInstall" style="display:none" title="Add this to your home screen">⤓ Install</button>
     <button class="btn" id="btnTheme" title="Switch between light and dark">🌙 Dark</button>
     <button class="btn" id="btnPrint">Print</button>
@@ -236,6 +252,12 @@
     <button class="tab" data-tab="conv">Unit Converter</button>
     <button class="tab" data-tab="fx">Formulas</button>
   </div>
+</div>
+
+<div class="updbar no-print" id="updBar">
+  <span>A newer version of the calculators is ready.</span>
+  <button id="updNow">Update now</button>
+  <button class="ghost" id="updLater">Later</button>
 </div>
 
 <div class="wrap">
@@ -674,6 +696,11 @@ Coex, per layer:
 
       <h3 class="sec">Yield</h3>
       <div class="fx">ft²/lb = Flat width (in) ÷ 12 ÷ (Gram/m × <b>W</b>)</div>
+
+      <h3 class="sec">This version</h3>
+      <p class="fx-note">Running <b id="fxVer">—</b>. Press <b>↻ Refresh</b> in the toolbar to pull the
+        newest copy from the server — it clears the offline cache and reloads, which is the quickest
+        way to be certain a phone is not showing an older build.</p>
 
       <h3 class="sec">Checked against your workbooks</h3>
       <p class="fx-note">Every formula above reproduces the cached results in
@@ -1355,12 +1382,66 @@ window.addEventListener("appinstalled", function(){
   $("#btnInstall").style.display = "none";
 });
 
-/* ---- offline ----
+/* ---- version ---- */
+var APP_VERSION = "2026-08-10.6";
+
+/* ---- forced refresh ----
+   Clears every cache and reloads from the network. This is the button an
+   operator presses when someone says "it's been updated" and their phone is
+   still showing yesterday's copy. */
+function forceRefresh(){
+  var done = function(){
+    /* cache-busting query so even a stale HTTP cache cannot win */
+    location.replace(location.pathname + "?v=" + Date.now());
+  };
+  if(!window.caches){ done(); return; }
+  caches.keys()
+    .then(function(keys){ return Promise.all(keys.map(function(k){ return caches.delete(k); })); })
+    .then(function(){
+      if(!("serviceWorker" in navigator)) return null;
+      return navigator.serviceWorker.getRegistrations().then(function(rs){
+        return Promise.all(rs.map(function(r){ return r.unregister(); }));
+      });
+    })
+    .then(done)
+    .catch(done);
+}
+$("#btnRefresh").addEventListener("click", function(){
+  this.textContent = "↻ Updating…";
+  this.disabled = true;
+  forceRefresh();
+});
+
+/* ---- update banner ---- */
+function showUpdate(){ $("#updBar").classList.add("on"); }
+$("#updNow").addEventListener("click", forceRefresh);
+$("#updLater").addEventListener("click", function(){ $("#updBar").classList.remove("on"); });
+
+/* ---- offline + update detection ----
    Registered only over http(s); opening the file directly has no service
    worker, which is fine — it still works, just without offline caching. */
 if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
   window.addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js").catch(function(){});
+    /* updateViaCache:"none" stops the browser serving sw.js from its own HTTP
+       cache, which is what makes an update sit unnoticed for up to a day */
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
+      .then(function(reg){
+        /* a new worker showing up means new code is on the server */
+        reg.addEventListener("updatefound", function(){
+          var sw = reg.installing;
+          if(!sw) return;
+          sw.addEventListener("statechange", function(){
+            if(sw.state === "installed" && navigator.serviceWorker.controller) showUpdate();
+          });
+        });
+        reg.update().catch(function(){});
+        /* check again whenever the app is brought back to the front */
+        document.addEventListener("visibilitychange", function(){
+          if(!document.hidden) reg.update().catch(function(){});
+        });
+        setInterval(function(){ reg.update().catch(function(){}); }, 30 * 60 * 1000);
+      })
+      .catch(function(){});
   });
 }
 
@@ -1382,6 +1463,7 @@ $("#btnTheme").addEventListener("click", function(){
   applyTheme(saved || "light");
 })();
 
+$("#fxVer").textContent = APP_VERSION;
 buildConverters();
 recalcAll();
 </script>
