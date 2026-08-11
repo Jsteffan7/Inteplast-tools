@@ -1274,9 +1274,9 @@ var MATERIALS = [
     role:"Three jobs in one pellet: UV protection, antiblock so the film does not stick to itself on the roll, and antistat so the bag does not cling or hold a charge. Compounding them together means one additive stream instead of three.",
     spec:"Standridge item 94277 · data sheet still to be located" },
 
-  { code:"SLIPAB", name:"Slip + antiblock masterbatch", conf:"chk",
-    role:"Surface behaviour. Slip lowers the coefficient of friction so bags separate and feed instead of dragging; antiblock keeps the layers from sticking. The two are usually run together.",
-    spec:"Likely Standridge, as with the other additives — confirm the item number and loading" },
+  { code:"SLIPAB", name:"Standridge fast slip + antiblock — item 93502", conf:"ok",
+    role:"Surface behaviour, in one pellet. The slip is a fast-bloom grade, so the coefficient of friction drops soon after extrusion rather than over days — the film separates and feeds instead of dragging while it is still fresh off the winder. The antiblock stops the layers sticking to each other on the roll.",
+    spec:"Standridge item 93502 · fast slip · slip and antiblock compounded together" },
 
   { code:"80733AB", name:"Standridge antiblock — item 80733", conf:"ok",
     role:"Antiblock in the mono film, where there is no separate sealant layer to carry it. Keeps the wound film from blocking to itself on the roll so it opens cleanly off the winder.",
@@ -1722,7 +1722,7 @@ window.addEventListener("appinstalled", function(){
 });
 
 /* ---- version ---- */
-var APP_VERSION = "2026-08-11.4";
+var APP_VERSION = "2026-08-11.5";
 
 /* ---- forced refresh ----
    Clears every cache and reloads from the network. This is the button an
