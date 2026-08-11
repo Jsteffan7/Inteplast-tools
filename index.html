@@ -260,7 +260,6 @@
     <button class="btn" id="btnRefresh" title="Check for a new version and reload">↻ Refresh</button>
     <button class="btn" id="btnInstall" style="display:none" title="Add this to your home screen">⤓ Install</button>
     <button class="btn" id="btnTheme" title="Switch between light and dark">🌙 Dark</button>
-    <button class="btn" id="btnPrint">Print</button>
   </div>
 </div>
 
@@ -1324,7 +1323,6 @@ $$(".tab").forEach(function(b){
     $$(".panel").forEach(function(p){ p.classList.toggle("on", p.id === "p-" + b.dataset.tab); });
   });
 });
-$("#btnPrint").addEventListener("click", function(){ window.print(); });
 $("#kMode").addEventListener("change", function(){ MODE = this.value; recalcAll(); });
 
 /* ---- cores ----
@@ -1415,7 +1413,7 @@ window.addEventListener("appinstalled", function(){
 });
 
 /* ---- version ---- */
-var APP_VERSION = "2026-08-10.8";
+var APP_VERSION = "2026-08-10.9";
 
 /* ---- forced refresh ----
    Clears every cache and reloads from the network. This is the button an
