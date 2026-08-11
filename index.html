@@ -1238,17 +1238,17 @@ var MATERIALS = [
     role:"General purpose film backbone. An LLDPE that carries toughness and stretch while staying easy to process — used where the structure needs body without the cost or stiffness of the premium sack resin.",
     spec:"Data sheet is on file but its text could not be extracted; confirm grade details from the sheet" },
 
-  { code:"VPSK914", name:"VPSK914", conf:"chk",
-    role:"Used heavily in the sealant layer of the heavy duty sacks (95% of layer C) and as a partial component elsewhere, which is the position a sealing or slip-modified resin normally occupies.",
-    spec:"A sheet is on file but it is a scan with no readable text — worth confirming what this grade actually is" },
+  { code:"VPSK914", name:"Metallocene polyethylene (mPE)", conf:"ok",
+    role:"The sealing resin. Metallocene polyethylene seals at a lower temperature and holds a far stronger seal than conventional PE, and brings high dart impact and puncture resistance with it. That is why it makes up 95% of the inside layer on the heavy duty sacks — the layer that has to weld to itself and hold a full load.",
+    spec:"Confirmed by the plant as the metallocene in these blends · a sheet is on file but is a scan with no readable text" },
 
   { code:"1018PFREE", name:"1018, PFAS-free version", conf:"chk",
     role:"A film resin carried in both the outside and inside layers of the pocket bag. The PFREE suffix marks the PFAS-free reformulation of the 1018 grade.",
     spec:"The 1018RA sheet on file is encrypted and could not be read; confirm density and melt index" },
 
-  { code:"LD105BR", name:"LD105BR — low density polyethylene", conf:"chk",
-    role:"Runs at a steady 34% through every layer of the PCPL blend, which is how LDPE is normally used: bubble stability, easier processing and a softer, more forgiving film.",
-    spec:"An Exxon LD2023 series sheet is on file but is encrypted; confirm which grade this code maps to" },
+  { code:"LD105BR", name:"Exxon LD2023 series LDPE — still coded LD105BR", conf:"ok",
+    role:"The processing resin. Low density polyethylene runs at a steady 34% through every layer of the PCPL blend, where it steadies the bubble, lowers the pressure needed to push the melt and gives the film a softer, more forgiving feel than a straight linear resin would.",
+    spec:"Renamed to LD2023 by the supplier but the job formulation still shows LD105BR, so that is the code used here" },
 
   { code:"UVI87565", name:"UV inhibitor masterbatch", conf:"chk",
     role:"Sunlight protection. Sacks stored outdoors go brittle and lose strength under UV; this is the additive that slows that down. Run at 2%, the usual carrier-level loading.",
@@ -1270,9 +1270,9 @@ var MATERIALS = [
     role:"Antiblock in the mono film, where there is no separate sealant layer to carry it. Keeps the wound film from blocking to itself on the roll.",
     spec:"Identified from the AB suffix — confirm the product" },
 
-  { code:"REGWHITE", name:"White regrind, or white concentrate", conf:"chk",
-    role:"Runs at 10% in the core of both white structures. That position and loading is where regrind normally goes — reprocessed white film returned to the middle layer where appearance matters least. A Colortech F100340 white concentrate sheet is also on file, so this code could instead be that pigment.",
-    spec:"Worth settling which it is: 10% of a core layer is a very different thing as regrind than as pigment" }
+  { code:"REGWHITE", name:"Colortech F100340 white concentrate", conf:"ok",
+    role:"This is what makes the bag white. A pigment concentrate carried in the core at 10%, giving the opacity of a 70% titanium dioxide loading without the cost of one. Its pigment system is chosen not to fight the slip, process aid and UV additives running alongside it, and not to cause plate-out or ink adhesion trouble downstream.",
+    spec:"LLDPE carrier · specific gravity 2.42 · max 260 C / 500 F · confirmed by the plant as the white, not regrind" }
 ];
 
 
@@ -1710,7 +1710,7 @@ window.addEventListener("appinstalled", function(){
 });
 
 /* ---- version ---- */
-var APP_VERSION = "2026-08-11.1";
+var APP_VERSION = "2026-08-11.2";
 
 /* ---- forced refresh ----
    Clears every cache and reloads from the network. This is the button an
