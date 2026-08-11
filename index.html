@@ -133,6 +133,57 @@
   h3.sec:first-child{margin-top:0}
   .fx-note{font-size:12.5px;line-height:1.6;color:var(--ink);margin:0 0 10px}
 
+  /* ═════════ blends ═════════ */
+  .blend-pick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .blend-btn{
+    font:inherit;font-size:13px;font-weight:700;padding:9px 16px;border-radius:6px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ip-blue-dark);text-align:left;line-height:1.25;
+  }
+  .blend-btn small{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
+  .blend-btn:hover{background:var(--ip-tint);border-color:var(--ip-blue)}
+  .blend-btn.on{background:var(--ip-blue);border-color:var(--ip-blue);color:#fff}
+  .blend-btn.on small{color:rgba(255,255,255,.8)}
+  :root[data-theme="dark"] .blend-btn{background:#0E1E2F;color:#9FC6EE}
+  :root[data-theme="dark"] .blend-btn.on{background:var(--ip-blue);color:#fff}
+
+  .lay-bar{display:flex;height:34px;border-radius:5px;overflow:hidden;margin-bottom:4px;border:1px solid var(--line)}
+  .lay-seg{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+  .lay-a{background:#1E6FBF} .lay-b{background:#145CA8} .lay-c{background:#0D3D73}
+  .lay-key{font-size:11.5px;color:var(--muted);margin-bottom:16px}
+
+  .layer-blk{margin-bottom:16px}
+  .layer-h{
+    display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;
+    font-size:13.5px;font-weight:700;color:var(--ip-blue-dark);
+  }
+  .layer-h .pc{font-size:12px;font-weight:600;color:var(--muted)}
+  table.blend{width:100%;border-collapse:collapse;font-size:13px}
+  table.blend th{
+    text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ip-blue-dark);
+    font-weight:700;padding:6px 8px;border-bottom:2px solid var(--line);background:var(--ip-tint-2);
+  }
+  table.blend td{padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  table.blend td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;width:88px}
+  table.blend td.tot{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);width:96px}
+  table.blend td.code{font-weight:700;color:var(--ip-blue-dark);width:130px}
+  table.blend td.role{color:var(--muted);font-size:12.5px}
+  table.blend tr.sum td{border-bottom:0;font-weight:700;color:var(--green);padding-top:8px}
+  table.blend tr.sum td.bad{color:var(--red)}
+
+  .mat{border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin-bottom:10px;background:#fff}
+  :root[data-theme="dark"] .mat{background:#0E1E2F}
+  .mat-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:5px}
+  .mat-code{font-size:14.5px;font-weight:700;color:var(--ip-blue-dark)}
+  .mat-name{font-size:12.5px;color:var(--muted);font-weight:600}
+  .mat-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    padding:2px 8px;border-radius:20px;border:1px solid;margin-left:auto}
+  .mat-tag.ok{background:var(--green-bg);border-color:var(--green-line);color:var(--green)}
+  .mat-tag.chk{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber)}
+  .mat-role{font-size:13px;line-height:1.55}
+  .mat-spec{font-size:11.5px;color:var(--muted);margin-top:6px}
+  .mat-where{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .mat-where b{color:var(--ip-blue-dark)}
+
   /* ═════════ tape measure ═════════ */
   .tm-note{font-size:11.5px;color:var(--muted);margin-top:8px;min-height:14px}
   .tm-note.warn{color:var(--amber);font-weight:600}
@@ -412,6 +463,30 @@
           <button class="btn-out" id="r_reset">Reset to A30 / B50 / C20</button>
           <span class="hint" style="color:var(--muted)">Percentages are by weight.</span>
         </div>
+      </div>
+    </div>
+
+    <!-- BLEND LIBRARY -->
+    <div class="card wide">
+      <div class="card-head">Blend Library
+        <span class="note">as entered on the AS400 formula screen</span></div>
+      <div class="card-body">
+        <div class="blend-pick" id="blendPick"></div>
+        <div id="blendView"></div>
+      </div>
+    </div>
+
+    <!-- MATERIAL GUIDE -->
+    <div class="card wide">
+      <div class="card-head">Material Guide
+        <span class="note">what each resin is doing in the formulation</span></div>
+      <div class="card-body">
+        <div class="banner">
+          Every material used in the blends above. <b>Confirmed</b> entries come from the technical data
+          sheet on file; <b>check</b> entries are identified from the code and should be verified before
+          anyone relies on them.
+        </div>
+        <div id="matList"></div>
       </div>
     </div>
 
@@ -1114,6 +1189,227 @@ function renderPlan(){
   put("j_lb", lbFromFt(ftw, gpm), 1, "lb");
 }
 
+
+/* ══════════ blends ══════════
+   Transcribed from the AS400 formula screens in Tools\\Extrusion\\Blends.
+   Layer percentages are gauge %, material percentages are % of that layer. */
+var BLENDS = [
+  { code:"HDS4", name:"Heavy duty sack", note:"061324", layers:[30, 50, 20],
+    mix:{ A:[["TFY826",98],["UVI87565",2]],
+          B:[["MDPE5502B",15],["TFY826",83],["UVI87565",2]],
+          C:[["UVIABAS",5],["VPSK914",95]] } },
+
+  { code:"HDS4WHITE", name:"White heavy duty sack", note:"090624", layers:[30, 50, 20],
+    mix:{ A:[["TFY826",98],["UVI87565",2]],
+          B:[["MDPE5502B",15],["REGWHITE",10],["TFY826",73],["UVI87565",2]],
+          C:[["UVIABAS",5],["VPSK914",95]] } },
+
+  { code:"HPBWHT", name:"Heavy duty pocket bag, white", note:"", layers:[30, 50, 20],
+    mix:{ A:[["TFY826",63],["UVI",2],["1018PFREE",35]],
+          B:[["REGWHITE",10],["TFY826",88],["UVI",2]],
+          C:[["UVIABAS",4],["1018PFREE",34],["118NJA",62]] } },
+
+  { code:"PCPL-GBM", name:"PCPL gusseted bag", note:"", layers:[25, 50, 25],
+    mix:{ A:[["LD105BR",34],["PAPFASFREE",1],["SLIPAB",3.5],["VPSK914",15],["118NJA",46.5]],
+          B:[["LD105BR",34],["118NJA",66]],
+          C:[["LD105BR",34],["PAPFASFREE",1],["SLIPAB",3.5],["VPSK914",15],["118NJA",46.5]] } },
+
+  { code:"HDSMONO2", name:"Mono clear", note:"052124 — replaces HDSMONO", layers:[100],
+    mix:{ A:[["UVI87565",2],["VPSK914",20],["118NJA",73],["80733AB",5]] } }
+];
+
+/* ══════════ what each material is for ══════════
+   ok  = taken from the technical data sheet on file
+   chk = identified from the code and the sheet title; confirm before relying on it */
+var MATERIALS = [
+  { code:"TFY826", name:"NOVAPOL TF-Y826 (Nova Chemicals)", conf:"ok",
+    role:"The strength backbone. A hexene copolymer LMDPE film resin — this is what gives a heavy duty sack its toughness, dart impact and puncture resistance. It also runs well through a narrow die gap.",
+    spec:"Density 0.926 g/cc · MI 0.8 · the TF-Y826-D grade carries slip and antiblock and is sold for heavy duty sacks" },
+
+  { code:"MDPE5502B", name:"Formolene HB5502B (Formosa)", conf:"ok",
+    role:"Stiffness. A high density resin blended into the core to add rigidity and body, so the bag stands up and resists stress cracking rather than feeling limp.",
+    spec:"HDPE · MI 0.3 · high ESCR · a blow moulding and sheet grade used here as a stiffening addition" },
+
+  { code:"PAPFASFREE", name:"Ingenia IP1172-02 PFAS-free process aid", conf:"ok",
+    role:"Processing, not properties. A polymer processing aid that clears melt fracture — the sharkskin or orange peel on the surface — and keeps die buildup down. PFAS-free, so it replaces the older fluoropolymer aids.",
+    spec:"Masterbatch · non-fluorinated · run at about 1% because a little goes a long way" },
+
+  { code:"118NJA", name:"SABIC LLDPE 118NJA", conf:"chk",
+    role:"General purpose film backbone. An LLDPE that carries toughness and stretch while staying easy to process — used where the structure needs body without the cost or stiffness of the premium sack resin.",
+    spec:"Data sheet is on file but its text could not be extracted; confirm grade details from the sheet" },
+
+  { code:"VPSK914", name:"VPSK914", conf:"chk",
+    role:"Used heavily in the sealant layer of the heavy duty sacks (95% of layer C) and as a partial component elsewhere, which is the position a sealing or slip-modified resin normally occupies.",
+    spec:"A sheet is on file but it is a scan with no readable text — worth confirming what this grade actually is" },
+
+  { code:"1018PFREE", name:"1018, PFAS-free version", conf:"chk",
+    role:"A film resin carried in both the outside and inside layers of the pocket bag. The PFREE suffix marks the PFAS-free reformulation of the 1018 grade.",
+    spec:"The 1018RA sheet on file is encrypted and could not be read; confirm density and melt index" },
+
+  { code:"LD105BR", name:"LD105BR — low density polyethylene", conf:"chk",
+    role:"Runs at a steady 34% through every layer of the PCPL blend, which is how LDPE is normally used: bubble stability, easier processing and a softer, more forgiving film.",
+    spec:"An Exxon LD2023 series sheet is on file but is encrypted; confirm which grade this code maps to" },
+
+  { code:"UVI87565", name:"UV inhibitor masterbatch", conf:"chk",
+    role:"Sunlight protection. Sacks stored outdoors go brittle and lose strength under UV; this is the additive that slows that down. Run at 2%, the usual carrier-level loading.",
+    spec:"Identified from the code — confirm the exact product and recommended loading" },
+
+  { code:"UVI", name:"UV inhibitor masterbatch", conf:"chk",
+    role:"Same purpose as UVI87565 and used at the same 2% in the pocket bag formulation. Worth confirming whether this is a separate product or the same material under a shorter code.",
+    spec:"Identified from the code" },
+
+  { code:"UVIABAS", name:"UV inhibitor + antiblock combination", conf:"chk",
+    role:"A combination additive in the inside layer: UV protection plus antiblock, which stops the film layers sticking together so the bag opens instead of welding shut on itself.",
+    spec:"A '5308 UVABAS COMBO 96005' sheet is on file — a scan, not readable. Confirm it matches this code" },
+
+  { code:"SLIPAB", name:"Slip + antiblock masterbatch", conf:"chk",
+    role:"Surface behaviour. Slip lowers the coefficient of friction so bags separate and feed instead of dragging; antiblock keeps the layers from sticking. The two are usually run together.",
+    spec:"Identified from the code — confirm the product and loading" },
+
+  { code:"80733AB", name:"Antiblock masterbatch", conf:"chk",
+    role:"Antiblock in the mono film, where there is no separate sealant layer to carry it. Keeps the wound film from blocking to itself on the roll.",
+    spec:"Identified from the AB suffix — confirm the product" },
+
+  { code:"REGWHITE", name:"White regrind, or white concentrate", conf:"chk",
+    role:"Runs at 10% in the core of both white structures. That position and loading is where regrind normally goes — reprocessed white film returned to the middle layer where appearance matters least. A Colortech F100340 white concentrate sheet is also on file, so this code could instead be that pigment.",
+    spec:"Worth settling which it is: 10% of a core layer is a very different thing as regrind than as pigment" }
+];
+
+
+/* ══════════ blend library ══════════ */
+var BLEND_AT = 0;
+var LAYER_NAME = { A:"A — outside", B:"B — core", C:"C — inside" };
+
+function matByCode(code){
+  for(var i = 0; i < MATERIALS.length; i++) if(MATERIALS[i].code === code) return MATERIALS[i];
+  return null;
+}
+
+/* A material's share of the whole structure is its share of the layer scaled
+   by how much of the gauge that layer is — the number that actually tells you
+   how much of it you are buying. */
+function structureShare(b){
+  var keys = Object.keys(b.mix), totals = {};
+  keys.forEach(function(k, i){
+    var layerPct = b.layers[i] || 0;
+    b.mix[k].forEach(function(row){
+      totals[row[0]] = (totals[row[0]] || 0) + row[1] * layerPct / 100;
+    });
+  });
+  return totals;
+}
+
+function renderBlendPicker(){
+  $("#blendPick").innerHTML = BLENDS.map(function(b, i){
+    return '<button type="button" class="blend-btn' + (i === BLEND_AT ? " on" : "") + '" data-b="' + i + '">' +
+      esc(b.code) + '<small>' + esc(b.name) + '</small></button>';
+  }).join("");
+}
+
+function renderBlend(){
+  var b = BLENDS[BLEND_AT];
+  if(!b) return;
+  var keys = Object.keys(b.mix);
+  var totals = structureShare(b);
+
+  /* the layer bar, drawn to scale */
+  var bar = keys.map(function(k, i){
+    var pct = b.layers[i] || 0;
+    var cls = k === "A" ? "lay-a" : (k === "B" ? "lay-b" : "lay-c");
+    return '<div class="lay-seg ' + cls + '" style="width:' + pct + '%">' +
+      (pct >= 12 ? esc(k) + " · " + fmt(pct, 0) + "%" : esc(k)) + '</div>';
+  }).join("");
+
+  var blocks = keys.map(function(k, i){
+    var layerPct = b.layers[i] || 0;
+    var rows = b.mix[k];
+    var sum = rows.reduce(function(a, r){ return a + r[1]; }, 0);
+    var body = rows.map(function(r){
+      var mat = matByCode(r[0]);
+      return '<tr>' +
+        '<td class="code">' + esc(r[0]) + '</td>' +
+        '<td class="n">' + fmt(r[1], 2) + ' %</td>' +
+        '<td class="tot">' + fmt(r[1] * layerPct / 100, 2) + ' % of film</td>' +
+        '<td class="role">' + (mat ? esc(mat.name) : "—") + '</td>' +
+      '</tr>';
+    }).join("");
+    var ok = Math.abs(sum - 100) < 0.005;
+    return '<div class="layer-blk">' +
+      '<div class="layer-h">' + esc(LAYER_NAME[k] || k) +
+        '<span class="pc">' + fmt(layerPct, 0) + '% of the gauge</span></div>' +
+      '<table class="blend"><thead><tr>' +
+        '<th>Technical code</th><th style="text-align:right">% of layer</th>' +
+        '<th style="text-align:right">Share of film</th><th>Material</th>' +
+      '</tr></thead><tbody>' + body +
+      '<tr class="sum"><td>Total</td><td class="n' + (ok ? "" : " bad") + '">' + fmt(sum, 2) + ' %</td>' +
+      '<td class="tot">' + fmt(layerPct, 2) + ' % of film</td><td></td></tr>' +
+      '</tbody></table></div>';
+  }).join("");
+
+  /* one line per material across the whole structure, biggest first */
+  var whole = Object.keys(totals).sort(function(x, y){ return totals[y] - totals[x]; }).map(function(code){
+    var mat = matByCode(code);
+    return '<tr>' +
+      '<td class="code">' + esc(code) + '</td>' +
+      '<td class="n">' + fmt(totals[code], 2) + ' %</td>' +
+      '<td class="role">' + (mat ? esc(mat.name) : "—") + '</td>' +
+    '</tr>';
+  }).join("");
+  var wholeSum = Object.keys(totals).reduce(function(a, k){ return a + totals[k]; }, 0);
+
+  $("#blendView").innerHTML =
+    '<div style="font-size:14px;font-weight:700;color:var(--ip-blue-dark);margin-bottom:2px">' +
+      esc(b.code) + ' — ' + esc(b.name) + '</div>' +
+    (b.note ? '<div class="lay-key" style="margin-bottom:10px">' + esc(b.note) + '</div>' : '<div style="height:8px"></div>') +
+    '<div class="lay-bar">' + bar + '</div>' +
+    '<div class="lay-key">' + (keys.length > 1
+      ? 'Layer split by gauge — outside on the left, inside on the right.'
+      : 'Single layer film.') + '</div>' +
+    blocks +
+    '<div class="layer-h" style="margin-top:20px">Across the whole structure</div>' +
+    '<table class="blend"><thead><tr>' +
+      '<th>Technical code</th><th style="text-align:right">% of film</th><th>Material</th>' +
+    '</tr></thead><tbody>' + whole +
+    '<tr class="sum"><td>Total</td><td class="n' + (Math.abs(wholeSum - 100) < 0.05 ? "" : " bad") +
+      '">' + fmt(wholeSum, 2) + ' %</td><td></td></tr></tbody></table>';
+}
+
+$("#blendPick").addEventListener("click", function(ev){
+  var i = ev.target.closest && ev.target.closest("[data-b]");
+  if(!i) return;
+  BLEND_AT = +i.getAttribute("data-b");
+  renderBlendPicker();
+  renderBlend();
+});
+
+function renderMaterials(){
+  /* which blends each material appears in, so its role has context */
+  var usedIn = {};
+  BLENDS.forEach(function(b){
+    Object.keys(b.mix).forEach(function(k){
+      b.mix[k].forEach(function(r){
+        usedIn[r[0]] = usedIn[r[0]] || {};
+        usedIn[r[0]][b.code] = 1;
+      });
+    });
+  });
+
+  $("#matList").innerHTML = MATERIALS.map(function(m){
+    var blends = Object.keys(usedIn[m.code] || {});
+    return '<div class="mat">' +
+      '<div class="mat-h">' +
+        '<span class="mat-code">' + esc(m.code) + '</span>' +
+        '<span class="mat-name">' + esc(m.name) + '</span>' +
+        '<span class="mat-tag ' + (m.conf === "ok" ? "ok" : "chk") + '">' +
+          (m.conf === "ok" ? "from data sheet" : "confirm") + '</span>' +
+      '</div>' +
+      '<div class="mat-role">' + esc(m.role) + '</div>' +
+      '<div class="mat-spec">' + esc(m.spec) + '</div>' +
+      (blends.length ? '<div class="mat-where">Used in <b>' + blends.map(esc).join('</b>, <b>') + '</b></div>' : "") +
+    '</div>';
+  }).join("");
+}
+
 /* ══════════ tape measure ══════════
    Tapes are marked in halves of an inch, so every denominator here is a power
    of two and reducing is repeated halving. */
@@ -1315,6 +1611,7 @@ function recalcAll(){
   renderExtRoll(); renderPressRoll(); renderGram(); renderBUR();
   renderBlend(); renderThroughput(); renderImp(); renderPlan();
   renderTape(); renderTime(); buildTapeTable();
+  renderBlendPicker(); renderBlend(); renderMaterials();
 }
 
 $$(".tab").forEach(function(b){
@@ -1413,7 +1710,7 @@ window.addEventListener("appinstalled", function(){
 });
 
 /* ---- version ---- */
-var APP_VERSION = "2026-08-10.9";
+var APP_VERSION = "2026-08-11.1";
 
 /* ---- forced refresh ----
    Clears every cache and reloads from the network. This is the button an

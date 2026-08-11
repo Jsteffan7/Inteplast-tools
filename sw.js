@@ -3,7 +3,7 @@
    Bump CACHE on every release. The version string is what makes an updated
    calculator actually reach the floor; without it a phone can serve a stale
    copy indefinitely. */
-const CACHE = 'ief-tools-v9-2026-08-10';
+const CACHE = 'ief-tools-v10-2026-08-11';
 
 const ASSETS = [
   './',
