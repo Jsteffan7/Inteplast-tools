@@ -53,7 +53,7 @@
   .wrap{max-width:1400px;margin:18px auto 70px;padding:0 16px}
   .panel{display:none}
   .panel.on{display:block}
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px;align-items:start}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:22px;align-items:start}
   @media (max-width:900px){ .cards{grid-template-columns:1fr} }
 
   .card{background:#fff;border:1px solid var(--line);border-radius:7px;overflow:hidden;
@@ -161,6 +161,10 @@
 
   /* ═════════ phone ═════════ */
   @media (max-width:640px){
+    .cards{gap:18px}
+    .wrap{padding:0 12px}
+    .out{padding:11px 12px}
+    .out-grid{gap:10px}
     .toolbar-inner{padding:8px 12px;gap:7px}
     .tb-brand{font-size:12.5px}
     .tb-brand .sub{display:none}
@@ -187,7 +191,11 @@
     --ip-blue-dark:#8FBEEA;
   }
   :root[data-theme="dark"] body{background:#0B1622}
-  :root[data-theme="dark"] .card{background:#132539}
+  :root[data-theme="dark"] .card{
+    background:#132539;border-color:#335473;
+    box-shadow:0 1px 2px rgba(0,0,0,.5),0 10px 26px rgba(0,0,0,.32);
+  }
+  :root[data-theme="dark"] .card-head{border-bottom-color:#335473}
   :root[data-theme="dark"] .fld input,
   :root[data-theme="dark"] .fld select,
   :root[data-theme="dark"] table.t input,
@@ -245,8 +253,8 @@
     <div class="kswitch">
       <span>Constants</span>
       <select id="kMode" title="Which constants the roll maths uses">
-        <option value="sheet">Match spreadsheets (65.4 / 0.00067)</option>
-        <option value="exact">Exact (65.4498 / 0.000672)</option>
+        <option value="sheet">Spreadsheet 65.4</option>
+        <option value="exact">Exact 65.4498</option>
       </select>
     </div>
     <button class="btn" id="btnRefresh" title="Check for a new version and reload">↻ Refresh</button>
@@ -576,7 +584,7 @@
 
 <!-- ═══════════════ CONVERTER ═══════════════ -->
 <div class="panel" id="p-conv">
-  <div class="cards">
+  <div class="cards" id="convCards">
 
     <!-- TAPE MEASURE -->
     <div class="card">
@@ -640,7 +648,6 @@
     </div>
 
   </div>
-  <div class="cards" id="convCards"></div>
 </div>
 
 <!-- ═══════════════ FORMULAS ═══════════════ -->
@@ -1263,7 +1270,7 @@ var CONV = [
 ];
 
 function buildConverters(){
-  $("#convCards").innerHTML = CONV.map(function(c, i){
+  var html = CONV.map(function(c, i){
     var opts = c.units.map(function(u, ui){
       return '<option value="' + ui + '">' + u[0] + ' (' + u[1] + ')</option>';
     }).join("");
@@ -1280,6 +1287,7 @@ function buildConverters(){
       '<div class="hint" style="font-size:11.5px;color:var(--muted)" id="cn' + i + '"></div>' +
     '</div></div>';
   }).join("");
+  $("#convCards").insertAdjacentHTML("beforeend", html);
 
   CONV.forEach(function(c, i){
     /* select the second unit by default so the card shows a real conversion */
@@ -1407,7 +1415,7 @@ window.addEventListener("appinstalled", function(){
 });
 
 /* ---- version ---- */
-var APP_VERSION = "2026-08-10.7";
+var APP_VERSION = "2026-08-10.8";
 
 /* ---- forced refresh ----
    Clears every cache and reloads from the network. This is the button an
