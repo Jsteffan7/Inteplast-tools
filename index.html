@@ -133,6 +133,17 @@
   h3.sec:first-child{margin-top:0}
   .fx-note{font-size:12.5px;line-height:1.6;color:var(--ink);margin:0 0 10px}
 
+  /* ═════════ tape measure ═════════ */
+  .tm-note{font-size:11.5px;color:var(--muted);margin-top:8px;min-height:14px}
+  .tm-note.warn{color:var(--amber);font-weight:600}
+  .tm-ref{margin-top:20px;border-top:1px solid var(--line-soft);padding-top:14px}
+  .tm-ref-h{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--ip-blue-dark);margin-bottom:8px}
+  table.tm-tbl td{padding:6px 8px;font-variant-numeric:tabular-nums}
+  table.tm-tbl td.f{font-weight:700;color:var(--ip-blue-dark);width:38%}
+  table.tm-tbl td.d{text-align:right;width:34%}
+  table.tm-tbl td.m{text-align:right;color:var(--muted);font-size:12px}
+
   /* ═════════ update banner ═════════ */
   .updbar{
     display:none;align-items:center;gap:12px;flex-wrap:wrap;
@@ -569,37 +580,29 @@
 
     <!-- TAPE MEASURE -->
     <div class="card">
-      <div class="card-head">Tape Measure — Decimal &harr; Fraction</div>
+      <div class="card-head">Tape Measure</div>
       <div class="card-body">
-        <div class="row">
-          <div class="fld"><label>Decimal <span class="u">in</span></label>
-            <input type="number" id="tmDec" step="0.0001" value="3.6875"></div>
-          <div class="fld"><label>Round to</label>
-            <select id="tmDen">
-              <option value="8">1/8</option>
-              <option value="16" selected>1/16</option>
-              <option value="32">1/32</option>
-              <option value="64">1/64</option>
-            </select></div>
+
+        <div class="fld" style="margin-bottom:8px">
+          <label for="tmDec">Decimal &rarr; fraction</label>
+          <input type="number" id="tmDec" step="0.0001" value="3.6875">
         </div>
-        <div class="out">
-          <div class="out-grid">
-            <div class="o hero"><div class="k">On the tape</div><div class="v" id="tmFrac">—</div></div>
-            <div class="o"><div class="k">Millimetres</div><div class="v" id="tmMm">—<small>mm</small></div></div>
-            <div class="o" id="tmErrBox"><div class="k">Rounding</div><div class="v" id="tmErr">—</div></div>
-          </div>
+        <div class="out" style="margin-top:0">
+          <div class="o hero"><div class="k">On the tape</div><div class="v" id="tmFrac">—</div></div>
+          <div class="tm-note" id="tmNote"></div>
         </div>
 
-        <div class="row" style="margin-top:16px">
-          <div class="fld"><label>Fraction &rarr; decimal</label>
-            <input type="text" id="tmFin" value="3 11/16" placeholder="3 11/16">
-            <div class="hint">Type it as you'd read it: <b>3 11/16</b>, <b>11/16</b> or <b>3-11/16</b>.</div></div>
+        <div class="fld" style="margin:18px 0 8px">
+          <label for="tmFin">Fraction &rarr; decimal</label>
+          <input type="text" id="tmFin" value="3 11/16" placeholder="3 11/16">
         </div>
-        <div class="out">
-          <div class="out-grid">
-            <div class="o hero"><div class="k">Decimal</div><div class="v" id="tmOut">—<small>in</small></div></div>
-            <div class="o"><div class="k">Millimetres</div><div class="v" id="tmOutMm">—<small>mm</small></div></div>
-          </div>
+        <div class="out" style="margin-top:0">
+          <div class="o hero"><div class="k">Decimal</div><div class="v" id="tmOut">—<small>in</small></div></div>
+        </div>
+
+        <div class="tm-ref">
+          <div class="tm-ref-h">Every 1/8 of an inch</div>
+          <table class="t tm-tbl"><tbody id="tmTable"></tbody></table>
         </div>
       </div>
     </div>
@@ -1136,25 +1139,46 @@ function parseFraction(s){
   return isFinite(n) ? n : NaN;
 }
 
+/* Use the coarsest denominator that lands exactly, so 0.5 reads 1/2 and
+   3.703125 reads 3 45/64 — no precision dropdown to get wrong. Anything that
+   is not a clean division falls back to the nearest 1/16 and says so. */
+function bestFraction(dec){
+  const dens = [2, 4, 8, 16, 32, 64];
+  for(let i = 0; i < dens.length; i++){
+    const scaled = dec * dens[i];
+    if(Math.abs(scaled - Math.round(scaled)) < 1e-9) return { f: toFraction(dec, dens[i]), exact: true };
+  }
+  return { f: toFraction(dec, 16), exact: false };
+}
+
 function renderTape(){
-  const dec = num("tmDec"), den = parseInt($("#tmDen").value, 10);
-  const f = toFraction(dec, den);
-  $("#tmFrac").textContent = fractionText(f);
-  put("tmMm", dec * 25.4, 2, "mm");
-  const err = f.value - dec;
-  $("#tmErr").textContent = Math.abs(err) < 1e-9
-    ? "exact"
-    : (err > 0 ? "+" : "") + err.toFixed(4) + " in";
-  $("#tmErrBox").classList.toggle("hero", Math.abs(err) < 1e-9);
+  const dec = num("tmDec");
+  const r = bestFraction(dec);
+  $("#tmFrac").textContent = fractionText(r.f);
+  const note = $("#tmNote");
+  if(r.exact){
+    note.textContent = "";
+    note.classList.remove("warn");
+  }else{
+    const err = r.f.value - dec;
+    note.textContent = "nearest 1/16 — " + (err > 0 ? "+" : "") + err.toFixed(4) + " in from " + dec;
+    note.classList.add("warn");
+  }
 
   const v = parseFraction($("#tmFin").value);
-  if(isFinite(v)){
-    $("#tmOut").innerHTML = fmt(v, 4) + '<small>in</small>';
-    put("tmOutMm", v * 25.4, 2, "mm");
-  }else{
-    $("#tmOut").innerHTML = "—";
-    $("#tmOutMm").innerHTML = "—";
+  $("#tmOut").innerHTML = isFinite(v) ? fmt(v, 4) + '<small>in</small>' : "—";
+}
+
+/* the reference every tape user actually wants at a glance */
+function buildTapeTable(){
+  let rows = "";
+  for(let i = 1; i <= 8; i++){
+    const f = toFraction(i / 8, 8);
+    rows += '<tr><td class="f">' + fractionText(f) + '</td>' +
+            '<td class="d">' + (i / 8).toFixed(3) + '</td>' +
+            '<td class="m">' + (i / 8 * 25.4).toFixed(2) + ' mm</td></tr>';
   }
+  $("#tmTable").innerHTML = rows;
 }
 
 /* ══════════ time ══════════ */
@@ -1283,7 +1307,7 @@ function convert(i){
 function recalcAll(){
   renderExtRoll(); renderPressRoll(); renderGram(); renderBUR();
   renderBlend(); renderThroughput(); renderImp(); renderPlan();
-  renderTape(); renderTime();
+  renderTape(); renderTime(); buildTapeTable();
 }
 
 $$(".tab").forEach(function(b){
@@ -1346,7 +1370,7 @@ var MAP = [
   [["r_total","r_a","r_b","r_c"], function(){ renderBlend(); renderThroughput(); }],
   [["t_w","t_mil","t_fpm","t_tgt","t_dens","t_dA","t_dB","t_dC"], renderThroughput],
   [["i_ft","i_rep","i_up"], renderImp],
-  [["tmDec","tmDen","tmFin"], renderTape],
+  [["tmDec","tmFin"], renderTape],
   [["tiIn","tiDur"], renderTime],
   [["j_imp","j_rep","j_waste","j_roll","j_gpm"], renderPlan]
 ];
@@ -1383,7 +1407,7 @@ window.addEventListener("appinstalled", function(){
 });
 
 /* ---- version ---- */
-var APP_VERSION = "2026-08-10.6";
+var APP_VERSION = "2026-08-10.7";
 
 /* ---- forced refresh ----
    Clears every cache and reloads from the network. This is the button an
