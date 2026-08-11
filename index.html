@@ -133,6 +133,22 @@
   h3.sec:first-child{margin-top:0}
   .fx-note{font-size:12.5px;line-height:1.6;color:var(--ink);margin:0 0 10px}
 
+  /* ═════════ collapsible tools ═════════ */
+  .card.collapsible > .card-head{cursor:pointer;user-select:none}
+  .card.collapsible > .card-head:hover{background:#DCE9F7}
+  :root[data-theme="dark"] .card.collapsible > .card-head:hover{background:#1B3D5E}
+  .card.collapsible > .card-head:focus-visible{outline:2px solid var(--ip-blue);outline-offset:-2px}
+  .card.collapsible > .card-body{display:none}
+  .card.collapsible.open > .card-body{display:block}
+  .chev{
+    margin-left:10px;font-size:11px;line-height:1;color:var(--ip-blue-dark);
+    transition:transform .18s ease;flex:none;
+  }
+  .card.collapsible.open .chev{transform:rotate(180deg)}
+  /* the note sits between the title and the chevron */
+  .card-head .note{margin-left:auto}
+  @media (prefers-reduced-motion:reduce){ .chev{transition:none} }
+
   /* ═════════ blends ═════════ */
   .blend-pick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
   .blend-btn{
@@ -288,6 +304,9 @@
     .toolbar,.tabbar,.acts,.no-print{display:none !important}
     body{background:#fff}
     .card{border:1px solid #999;box-shadow:none;page-break-inside:avoid}
+    /* paper has no affordance to expand a section */
+    .card.collapsible > .card-body{display:block !important}
+    .chev{display:none !important}
     .panel{display:none !important}
     .panel.on{display:block !important}
     @page{size:letter portrait;margin:.5in}
@@ -1217,8 +1236,8 @@ var BLENDS = [
           C:[["UVIABAS",5],["VPSK914",95]] } },
 
   { code:"HPBWHT", name:"Heavy duty pocket bag, white", note:"", layers:[30, 50, 20],
-    mix:{ A:[["TFY826",63],["UVI",2],["1018PFREE",35]],
-          B:[["REGWHITE",10],["TFY826",88],["UVI",2]],
+    mix:{ A:[["TFY826",63],["UVI87565",2],["1018PFREE",35]],
+          B:[["REGWHITE",10],["TFY826",88],["UVI87565",2]],
           C:[["UVIABAS",4],["1018PFREE",34],["118NJA",62]] } },
 
   { code:"PCPL-GBM", name:"PCPL gusseted bag", note:"", layers:[25, 50, 25],
@@ -1264,11 +1283,7 @@ var MATERIALS = [
 
   { code:"UVI87565", name:"Standridge UV inhibitor — item 87565", conf:"ok",
     role:"Sunlight protection. Sacks sit outdoors and go brittle under UV; this slows that down. A chemical-resistant grade, so it holds up where the bag also sees chemical contact. Run at 2%, the usual carrier-level loading.",
-    spec:"Standridge item 87565 · chemical resistant · no data sheet located yet" },
-
-  { code:"UVI", name:"Standridge UV inhibitor — short code", conf:"chk",
-    role:"The chemical-resistant UV inhibitor again, at the same 2% loading, written under a shorter code in the pocket bag formulation. Almost certainly the same material as UVI87565.",
-    spec:"Standridge · confirm whether this is item 87565 under a short code or a separate item" },
+    spec:"Standridge item 87565 · chemical resistant · the only UV inhibitor the plant runs, so a bare UVI on a formulation screen is this · no data sheet located yet" },
 
   { code:"UVIABAS", name:"Standridge UVI + antiblock + antistat — item 94277", conf:"ok",
     role:"Three jobs in one pellet: UV protection, antiblock so the film does not stick to itself on the roll, and antistat so the bag does not cling or hold a charge. Compounding them together means one additive stream instead of three.",
@@ -1618,6 +1633,46 @@ function convert(i){
   $("#cn" + i).textContent = "1 " + a[1] + " = " + (Math.round((b[2] / a[2]) * 1e6) / 1e6) + " " + b[1];
 }
 
+/* ══════════ collapsible tools ══════════
+   Every card folds to its header so the tab reads as a list of tools. The
+   open/closed state is remembered per card, keyed off the header text rather
+   than position so adding a card does not shuffle everyone's preferences. */
+function initCollapse(){
+  $$(".card").forEach(function(card){
+    var head = card.querySelector(".card-head");
+    if(!head || card.dataset.collapse === "done") return;
+
+    var title = (head.textContent || "").replace(/\s+/g, " ").trim().slice(0, 44);
+    var key = "ief.open." + title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+    card.classList.add("collapsible");
+    card.dataset.collapse = "done";
+
+    var chev = document.createElement("span");
+    chev.className = "chev";
+    chev.textContent = "\u25BC";
+    head.appendChild(chev);
+
+    var open = false;
+    try{ open = localStorage.getItem(key) === "1"; }catch(e){}
+    card.classList.toggle("open", open);
+
+    head.setAttribute("role", "button");
+    head.setAttribute("tabindex", "0");
+    head.setAttribute("aria-expanded", open ? "true" : "false");
+
+    function toggle(){
+      var now = card.classList.toggle("open");
+      head.setAttribute("aria-expanded", now ? "true" : "false");
+      try{ localStorage.setItem(key, now ? "1" : "0"); }catch(e){}
+    }
+    head.addEventListener("click", toggle);
+    head.addEventListener("keydown", function(ev){
+      if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); toggle(); }
+    });
+  });
+}
+
 /* ══════════ wiring ══════════ */
 function recalcAll(){
   renderExtRoll(); renderPressRoll(); renderGram(); renderBUR();
@@ -1722,7 +1777,7 @@ window.addEventListener("appinstalled", function(){
 });
 
 /* ---- version ---- */
-var APP_VERSION = "2026-08-11.5";
+var APP_VERSION = "2026-08-11.6";
 
 /* ---- forced refresh ----
    Clears every cache and reloads from the network. This is the button an
@@ -1804,6 +1859,7 @@ $("#btnTheme").addEventListener("click", function(){
 
 $("#fxVer").textContent = APP_VERSION;
 buildConverters();
+initCollapse();          /* after the converter cards exist, so they fold too */
 recalcAll();
 </script>
 </body>
